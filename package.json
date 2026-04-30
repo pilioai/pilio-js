@@ -8,6 +8,7 @@
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "typecheck": "pnpm --filter @pilio/sdk build && pnpm -r typecheck",
+    "smoke:cli": "node scripts/smoke-cli.mjs",
     "generate:types": "openapi-typescript openapi/pilio-openapi.json --output packages/sdk/src/generated/openapi.d.ts",
     "lint:openapi": "redocly lint openapi/pilio-openapi.json",
     "sync:openapi": "node scripts/sync-openapi.mjs"
