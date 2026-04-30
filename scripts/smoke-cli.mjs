@@ -1,110 +1,229 @@
 import { createServer } from "node:http";
+import { spawn } from "node:child_process";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { spawn } from "node:child_process";
 
 const repoRoot = resolve(import.meta.dirname, "..");
-const cliEntry = resolve(repoRoot, "packages", "cli", "dist", "index.js");
+const cliEntry = process.env.PILIO_CLI_ENTRY
+  ? resolve(process.env.PILIO_CLI_ENTRY)
+  : resolve(repoRoot, "packages", "cli", "dist", "index.js");
 const tmpDir = await mkdtemp(join(tmpdir(), "pilio-cli-smoke-"));
-const inputPath = join(tmpDir, "portrait.png");
 
-await writeFile(inputPath, new Uint8Array([137, 80, 78, 71, 1, 2, 3, 4]));
-
-const observed = {
-  createFileAuth: "",
-  uploadAuth: "",
-  removeBackgroundAuth: "",
-  removeBackgroundBody: undefined,
+const files = {
+  portrait: join(tmpDir, "portrait.png"),
+  watermarked: join(tmpDir, "watermarked.png"),
+  small: join(tmpDir, "small.png"),
+  pdf: join(tmpDir, "watermarked.pdf"),
+  refA: join(tmpDir, "reference-a.png"),
+  refB: join(tmpDir, "reference-b.png"),
 };
 
-const server = createServer(async (req, res) => {
-  const url = new URL(req.url ?? "/", "http://127.0.0.1");
-  const body = await readRequestBody(req);
+for (const [index, filePath] of Object.values(files).entries()) {
+  await writeFile(filePath, new Uint8Array([index + 1, 80, 73, 76, 73, 79]));
+}
 
-  if (req.method === "POST" && url.pathname === "/v1/files/batch-create") {
-    const uploadURL = `${currentBaseURL()}/upload/file_1`;
-    observed.createFileAuth = req.headers.authorization ?? "";
-    res.setHeader("content-type", "application/json");
-    res.end(
-      JSON.stringify({
+const observed = {
+  fileCreates: [],
+  uploads: [],
+  taskCreates: [],
+  taskStatuses: [],
+  taskResults: [],
+};
+
+let fileCounter = 0;
+
+const server = createServer(async (req, res) => {
+  try {
+    const url = new URL(req.url ?? "/", "http://127.0.0.1");
+    const body = await readRequestBody(req);
+
+    if (req.method === "POST" && url.pathname === "/v1/files/batch-create") {
+      const payload = JSON.parse(body.toString("utf8"));
+      const source = payload.files?.[0] ?? {};
+      fileCounter += 1;
+      const id = `file_${fileCounter}`;
+      observed.fileCreates.push({ auth: req.headers.authorization ?? "", payload, id });
+      json(res, {
         code: 200,
         message: "ok",
         data: {
           total: 1,
           items: [
             {
-              id: "file_1",
-              name: "portrait.png",
-              type: "png",
-              upload_url: uploadURL,
+              id,
+              name: source.name,
+              type: source.type,
+              upload_url: `${currentBaseURL()}/upload/${id}`,
             },
           ],
         },
-      }),
-    );
-    return;
-  }
+      });
+      return;
+    }
 
-  if (req.method === "PUT" && url.pathname === "/upload/file_1") {
-    observed.uploadAuth = req.headers.authorization ?? "";
-    res.statusCode = body.length > 0 ? 200 : 400;
-    res.end();
-    return;
-  }
+    if (req.method === "PUT" && url.pathname.startsWith("/upload/")) {
+      observed.uploads.push({
+        auth: req.headers.authorization ?? "",
+        path: url.pathname,
+        bytes: body.length,
+      });
+      res.statusCode = body.length > 0 ? 200 : 400;
+      res.end();
+      return;
+    }
 
-  if (req.method === "POST" && url.pathname === "/v1/images/remove-background") {
-    observed.removeBackgroundAuth = req.headers.authorization ?? "";
-    observed.removeBackgroundBody = JSON.parse(body.toString("utf8"));
-    res.setHeader("content-type", "application/json");
-    res.end(
-      JSON.stringify({
+    const createTask = taskCreateRoutes[url.pathname];
+    if (req.method === "POST" && createTask) {
+      const payload = JSON.parse(body.toString("utf8"));
+      observed.taskCreates.push({
+        auth: req.headers.authorization ?? "",
+        path: url.pathname,
+        payload,
+      });
+      json(res, {
         code: 200,
         message: "ok",
         data: {
-          task_id: "task_smoke_1",
+          task_id: createTask.taskId,
           status: "Pending",
-          status_url: "/v1/tasks/task_smoke_1/status",
-          result_url: "/v1/tasks/task_smoke_1/result",
+          status_url: `/v1/tasks/${createTask.taskId}/status`,
+          result_url: `/v1/tasks/${createTask.taskId}/result`,
         },
-      }),
-    );
-    return;
-  }
+      });
+      return;
+    }
 
-  res.statusCode = 404;
-  res.end(`unexpected ${req.method} ${url.pathname}`);
+    if (req.method === "GET" && url.pathname === "/v1/tasks/task_wait/status") {
+      observed.taskStatuses.push({ auth: req.headers.authorization ?? "" });
+      json(res, {
+        code: 200,
+        message: "ok",
+        data: {
+          task_id: "task_wait",
+          status: "Succeeded",
+          result_url: "/v1/tasks/task_wait/result",
+        },
+      });
+      return;
+    }
+
+    if (req.method === "GET" && url.pathname === "/v1/tasks/task_wait/result") {
+      observed.taskResults.push({ auth: req.headers.authorization ?? "" });
+      json(res, {
+        code: 200,
+        message: "ok",
+        data: {
+          task_id: "task_wait",
+          status: "Succeeded",
+          files: [{ id: "result_1", download_url: "https://download.example/result.png" }],
+        },
+      });
+      return;
+    }
+
+    res.statusCode = 404;
+    res.end(`unexpected ${req.method} ${url.pathname}`);
+  } catch (error) {
+    res.statusCode = 500;
+    res.end(error instanceof Error ? error.stack : String(error));
+  }
 });
 
+const taskCreateRoutes = {
+  "/v1/images/gpt-image-2/generations": { taskId: "task_generate" },
+  "/v1/images/gpt-image-2/edits": { taskId: "task_edit" },
+  "/v1/images/remove-watermark": { taskId: "task_remove_image_watermark" },
+  "/v1/images/remove-background": { taskId: "task_remove_background" },
+  "/v1/images/upscale": { taskId: "task_upscale_image" },
+  "/v1/pdfs/remove-watermark": { taskId: "task_remove_pdf_watermark" },
+};
+
 await new Promise((resolveListen) => server.listen(0, "127.0.0.1", resolveListen));
-const address = server.address();
-if (!address || typeof address === "string") {
-  throw new Error("Mock server did not expose a TCP address");
-}
-const baseURL = `http://127.0.0.1:${address.port}`;
+const baseURL = currentBaseURL();
 
 try {
-  const result = await runNode([
-    cliEntry,
-    "remove-background",
-    "--input",
-    inputPath,
-  ], {
-    PILIO_API_KEY: "pilio_sk_test",
-    PILIO_BASE_URL: baseURL,
+  await expectCLI(["gpt-image-2", "generate", "--prompt", "hello", "--aspect-ratio", "1:1"], "task_generate");
+  await expectCLI(["gpt-image-2", "edit", "--input", files.refA, "--input", files.refB, "--prompt", "make it crisp"], "task_edit");
+  await expectCLI(["remove-image-watermark", "--input", files.watermarked], "task_remove_image_watermark");
+  await expectCLI(["remove-background", "--input", files.portrait], "task_remove_background");
+  await expectCLI(["upscale-image", "--input", files.small], "task_upscale_image");
+  await expectCLI(["remove-pdf-watermark", "--input", files.pdf, "--mode", "ai"], "task_remove_pdf_watermark");
+  await expectCLI(["task", "wait", "task_wait"], "result_1");
+
+  assertAllPilioRequestsAreAuthenticated();
+  assertAllUploadsOmitAPIKey();
+  assertTaskBody("/v1/images/gpt-image-2/generations", (body) => {
+    assert(body.prompt === "hello", "generation prompt mismatch");
+    assert(body.aspect_ratio === "1:1", "generation aspect ratio mismatch");
   });
+  assertTaskBody("/v1/images/gpt-image-2/edits", (body) => {
+    assert(Array.isArray(body.image_file_ids), "edit image_file_ids missing");
+    assert(body.image_file_ids.length === 2, "edit should upload two reference images");
+    assert(body.prompt === "make it crisp", "edit prompt mismatch");
+  });
+  assertTaskBody("/v1/images/remove-watermark", (body) => assertHasFileID(body, "remove image watermark"));
+  assertTaskBody("/v1/images/remove-background", (body) => assertHasFileID(body, "remove background"));
+  assertTaskBody("/v1/images/upscale", (body) => assertHasFileID(body, "upscale image"));
+  assertTaskBody("/v1/pdfs/remove-watermark", (body) => {
+    assert(typeof body.pdf_file_id === "string" && body.pdf_file_id.startsWith("file_"), "PDF watermark command did not use uploaded PDF file id");
+    assert(body.mode === "ai", "PDF watermark mode mismatch");
+  });
+  assert(observed.taskStatuses.length === 1, "task wait should query task status");
+  assert(observed.taskResults.length === 1, "task wait should query task result after success");
 
-  assert(result.status === 0, `CLI exited with ${result.status}\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`);
-  assert(result.stdout.includes("task_smoke_1"), `CLI stdout did not include task id:\n${result.stdout}`);
-  assert(observed.createFileAuth === "Bearer pilio_sk_test", "Pilio API key was not sent to /v1/files/batch-create");
-  assert(observed.removeBackgroundAuth === "Bearer pilio_sk_test", "Pilio API key was not sent to /v1/images/remove-background");
-  assert(observed.uploadAuth === "", "Pilio API key was incorrectly sent to presigned upload URL");
-  assert(observed.removeBackgroundBody?.image_file_id === "file_1", "remove-background did not use uploaded file id");
-
-  console.log("CLI smoke passed");
+  console.log("CLI smoke passed for all commands");
 } finally {
   await new Promise((resolveClose) => server.close(resolveClose));
   await rm(tmpDir, { recursive: true, force: true });
+}
+
+async function expectCLI(args, expectedOutput) {
+  const result = await runCLI(args, {
+    PILIO_API_KEY: "pilio_sk_test",
+    PILIO_BASE_URL: baseURL,
+  });
+  assert(
+    result.status === 0,
+    `CLI ${args.join(" ")} exited with ${result.status}\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`,
+  );
+  assert(result.stdout.includes(expectedOutput), `CLI ${args.join(" ")} stdout did not include ${expectedOutput}:\n${result.stdout}`);
+}
+
+function assertAllPilioRequestsAreAuthenticated() {
+  const requests = [
+    ...observed.fileCreates.map((request) => ({ label: "/v1/files/batch-create", auth: request.auth })),
+    ...observed.taskCreates.map((request) => ({ label: request.path, auth: request.auth })),
+    ...observed.taskStatuses.map((request) => ({ label: "/v1/tasks/:id/status", auth: request.auth })),
+    ...observed.taskResults.map((request) => ({ label: "/v1/tasks/:id/result", auth: request.auth })),
+  ];
+
+  for (const request of requests) {
+    assert(request.auth === "Bearer pilio_sk_test", `Pilio API key missing for ${request.label}`);
+  }
+}
+
+function assertAllUploadsOmitAPIKey() {
+  assert(observed.uploads.length === 6, `expected 6 presigned uploads, got ${observed.uploads.length}`);
+  for (const upload of observed.uploads) {
+    assert(upload.bytes > 0, `empty upload body for ${upload.path}`);
+    assert(upload.auth === "", `Pilio API key was incorrectly sent to presigned upload URL ${upload.path}`);
+  }
+}
+
+function assertTaskBody(path, assertBody) {
+  const request = observed.taskCreates.find((item) => item.path === path);
+  assert(Boolean(request), `missing task request for ${path}`);
+  assertBody(request.payload);
+}
+
+function assertHasFileID(body, label) {
+  assert(typeof body.image_file_id === "string" && body.image_file_id.startsWith("file_"), `${label} did not use uploaded image file id`);
+}
+
+function json(res, body) {
+  res.setHeader("content-type", "application/json");
+  res.end(JSON.stringify(body));
 }
 
 function readRequestBody(req) {
@@ -124,9 +243,13 @@ function currentBaseURL() {
   return `http://127.0.0.1:${address.port}`;
 }
 
-function runNode(args, env) {
+function runCLI(args, env) {
+  return runProcess(process.execPath, [cliEntry, ...args], env);
+}
+
+function runProcess(command, args, env) {
   return new Promise((resolveRun) => {
-    const child = spawn(process.execPath, args, {
+    const child = spawn(command, args, {
       cwd: repoRoot,
       env: {
         ...process.env,
