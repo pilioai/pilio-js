@@ -15,3 +15,10 @@ pnpm test
 pnpm build
 ```
 
+Live CLI verification against a real Pilio API environment:
+
+```bash
+PILIO_API_KEY=... PILIO_BASE_URL=http://localhost:30080 pnpm live:cli
+```
+
+`pnpm live:cli` creates temporary PNG/PDF fixtures, runs every CLI command once, waits for each task result, and removes the temporary files. Keep API keys in the process environment only.
