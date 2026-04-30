@@ -1,0 +1,1334 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Pilio Public API",
+    "version": "1.0.0",
+    "description": "Public API for Pilio GPT Image 2, image watermark removal, background removal, image upscale, and PDF watermark removal tasks. API tasks reuse the normal Pilio credit balance and consume 3x the web base credit cost by default; large customer accounts may have a custom multiplier. This specification is optimized for AI coding agents: create files first, upload to presigned URLs, create tasks with file IDs, poll status, then download result URLs."
+  },
+  "servers": [
+    {
+      "url": "https://pilio.ai",
+      "description": "Production"
+    },
+    {
+      "url": "http://localhost:38080",
+      "description": "Local frontend proxy"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    },
+    {
+      "apiKeyHeader": []
+    }
+  ],
+  "paths": {
+    "/v1/images/gpt-image-2/generations": {
+      "post": {
+        "tags": [
+          "GPT Image 2"
+        ],
+        "summary": "Create a GPT Image 2 generation task",
+        "description": "Creates an asynchronous text-to-image task and returns polling URLs.",
+        "operationId": "createGPTImage2Generation",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GPTImage2GenerationRequest"
+              },
+              "examples": {
+                "basic": {
+                  "value": {
+                    "prompt": "A cinematic product photo of an orange perfume bottle",
+                    "aspect_ratio": "3:2",
+                    "output_count": 2,
+                    "quality": "high"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Task created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskCreateEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/v1/images/gpt-image-2/edits": {
+      "post": {
+        "tags": [
+          "GPT Image 2"
+        ],
+        "summary": "Create a GPT Image 2 edit task",
+        "description": "Creates an asynchronous image edit task with 1 to 16 reference images.",
+        "operationId": "createGPTImage2Edit",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GPTImage2EditRequest"
+              },
+              "examples": {
+                "basic": {
+                  "value": {
+                    "prompt": "Turn this reference into a studio product photo",
+                    "image_file_ids": [
+                      "123456789",
+                      "123456790"
+                    ],
+                    "aspect_ratio": "auto",
+                    "quality": "medium"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Task created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskCreateEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/v1/images/remove-watermark": {
+      "post": {
+        "tags": [
+          "Image Watermark Removal"
+        ],
+        "summary": "Create an image watermark removal task",
+        "description": "Creates an asynchronous image watermark removal task. Manual mode accepts 1 to 5 percentage-based boxes.",
+        "operationId": "createRemoveImageWatermark",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RemoveImageWatermarkRequest"
+              },
+              "examples": {
+                "manual": {
+                  "value": {
+                    "image_file_id": "123456789",
+                    "mode": "manual",
+                    "boxes": [
+                      {
+                        "x1": 10,
+                        "y1": 15,
+                        "x2": 60,
+                        "y2": 70
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Task created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskCreateEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/v1/images/remove-background": {
+      "post": {
+        "tags": [
+          "Background Removal"
+        ],
+        "summary": "Create an image background removal task",
+        "description": "Creates an image background removal task and returns polling URLs. The output is a transparent-background image.",
+        "operationId": "createRemoveBackground",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RemoveBackgroundRequest"
+              },
+              "examples": {
+                "basic": {
+                  "value": {
+                    "image_file_id": "123456789",
+                    "industry_type": "portrait",
+                    "quality_type": "original",
+                    "trim_transparent_background": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Task created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskCreateEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/v1/images/upscale": {
+      "post": {
+        "tags": [
+          "Image Upscale"
+        ],
+        "summary": "Create an image upscale task",
+        "description": "Creates an image upscaling task to improve resolution and clarity.",
+        "operationId": "createImageUpscale",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImageUpscaleRequest"
+              },
+              "examples": {
+                "basic": {
+                  "value": {
+                    "image_file_id": "123456789",
+                    "method": "ai_super_resolution",
+                    "preset": "hd",
+                    "type": "2X",
+                    "enhance_face": true,
+                    "enhance_quality": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Task created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskCreateEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/v1/pdfs/remove-watermark": {
+      "post": {
+        "tags": [
+          "PDF Watermark Removal"
+        ],
+        "summary": "Create a PDF watermark removal task",
+        "description": "Creates a PDF watermark removal task. editable mode uses structured removal; ai mode reconstructs pages as images.",
+        "operationId": "createPDFRemoveWatermark",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PDFRemoveWatermarkRequest"
+              },
+              "examples": {
+                "editable": {
+                  "value": {
+                    "pdf_file_id": "123456789",
+                    "mode": "editable"
+                  }
+                },
+                "ai": {
+                  "value": {
+                    "pdf_file_id": "123456789",
+                    "mode": "ai"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Task created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskCreateEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/v1/tasks/{id}/status": {
+      "get": {
+        "tags": [
+          "Public Basics"
+        ],
+        "summary": "Get task status",
+        "operationId": "getTaskStatus",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TaskId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Task status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskStatusEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        },
+        "description": "Poll task status until Succeeded or Failed. Start with a 2 second interval and back off to 5 seconds for long tasks."
+      }
+    },
+    "/v1/tasks/{id}/result": {
+      "get": {
+        "tags": [
+          "Public Basics"
+        ],
+        "summary": "Get task result",
+        "operationId": "getTaskResult",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TaskId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Task result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskResultEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        },
+        "description": "Returns result files after task success. Download files directly from files[].download_url or zip_file.download_url. These URLs are temporary; call this endpoint again after expiration."
+      }
+    },
+    "/v1/files/batch-create": {
+      "post": {
+        "tags": [
+          "Files"
+        ],
+        "summary": "Create upload file records",
+        "description": "Creates file records and returns presigned PUT URLs. Use upload_url for a single upload without calling complete. Use upload_urls for multipart upload followed by /v1/files/{id}/complete. Do not send the Pilio API Key to presigned upload URLs. Use returned items[].id as image_file_id, image_file_ids, or pdf_file_id when creating tasks.",
+        "operationId": "createFiles",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FileBatchCreateRequest"
+              },
+              "examples": {
+                "basic": {
+                  "value": {
+                    "files": [
+                      {
+                        "nanoid": "V1StGXR8_Z5jdHi6B-myT",
+                        "name": "reference.png",
+                        "type": "png",
+                        "size": 1024
+                      }
+                    ],
+                    "upload_mode": "simple",
+                    "storage_intent": "temporary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Upload URLs created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileBatchCreateEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/v1/files/{id}/complete": {
+      "post": {
+        "tags": [
+          "Files"
+        ],
+        "summary": "Complete multipart upload",
+        "description": "Completes a multipart upload after all upload_urls have been PUT successfully and their ETag headers have been collected. This endpoint is only needed when batch-create returns upload_urls; single upload_url uploads do not need it.",
+        "operationId": "completeMultipartUpload",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "File ID returned by /v1/files/batch-create."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteMultipartUploadRequest"
+              },
+              "examples": {
+                "basic": {
+                  "value": {
+                    "parts": [
+                      {
+                        "part_number": 1,
+                        "etag": "\"etag-from-upload-response\""
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Multipart upload completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "Pilio API Key",
+        "description": "Send `Authorization: Bearer pilio_sk_...`."
+      },
+      "apiKeyHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "Compatibility header for Pilio API keys."
+      }
+    },
+    "parameters": {
+      "TaskId": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Task ID returned by a task creation endpoint."
+      }
+    },
+    "responses": {
+      "ErrorResponse": {
+        "description": "Error response",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorEnvelope"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "ResponseEnvelope": {
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "200 means success; other values indicate errors."
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {}
+        },
+        "x-tags": [
+          "Shared Schemas"
+        ]
+      },
+      "ErrorEnvelope": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ResponseEnvelope"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        ],
+        "x-tags": [
+          "Shared Schemas"
+        ]
+      },
+      "TaskStatus": {
+        "type": "string",
+        "enum": [
+          "Pending",
+          "Processing",
+          "Succeeded",
+          "Failed"
+        ],
+        "x-tags": [
+          "Shared Schemas"
+        ]
+      },
+      "TaskCreateEnvelope": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ResponseEnvelope"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/TaskCreateResult"
+              }
+            }
+          }
+        ],
+        "x-tags": [
+          "Shared Schemas"
+        ]
+      },
+      "TaskCreateResult": {
+        "type": "object",
+        "required": [
+          "task_id",
+          "status",
+          "status_url",
+          "result_url"
+        ],
+        "properties": {
+          "task_id": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TaskStatus"
+          },
+          "status_url": {
+            "type": "string"
+          },
+          "result_url": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "x-tags": [
+          "Shared Schemas"
+        ]
+      },
+      "TaskStatusEnvelope": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ResponseEnvelope"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/TaskStatusResult"
+              }
+            }
+          }
+        ],
+        "x-tags": [
+          "Shared Schemas"
+        ]
+      },
+      "TaskStatusResult": {
+        "type": "object",
+        "required": [
+          "task_id",
+          "status"
+        ],
+        "properties": {
+          "task_id": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TaskStatus"
+          },
+          "error_type": {
+            "type": "string"
+          },
+          "error_message": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "result_url": {
+            "type": "string"
+          }
+        },
+        "x-tags": [
+          "Shared Schemas"
+        ]
+      },
+      "TaskResultEnvelope": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ResponseEnvelope"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/TaskResult"
+              }
+            }
+          }
+        ],
+        "x-tags": [
+          "Shared Schemas"
+        ]
+      },
+      "TaskResult": {
+        "type": "object",
+        "required": [
+          "task_id",
+          "status"
+        ],
+        "properties": {
+          "task_id": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TaskStatus"
+          },
+          "error_type": {
+            "type": "string"
+          },
+          "error_message": {
+            "type": "string"
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ResultFile"
+            }
+          },
+          "zip_file": {
+            "$ref": "#/components/schemas/ResultFile"
+          }
+        },
+        "x-tags": [
+          "Shared Schemas"
+        ]
+      },
+      "ResultFile": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "File size in bytes."
+          },
+          "download_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Temporary result download URL. Use GET directly. Do not send the Pilio API Key."
+          }
+        },
+        "x-tags": [
+          "Shared Schemas"
+        ]
+      },
+      "GPTImage2GenerationRequest": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/GPTImage2BaseRequest"
+          },
+          {
+            "type": "object",
+            "required": [
+              "aspect_ratio"
+            ]
+          }
+        ],
+        "x-tags": [
+          "Shared Schemas"
+        ]
+      },
+      "GPTImage2EditRequest": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/GPTImage2BaseRequest"
+          },
+          {
+            "type": "object",
+            "required": [
+              "image_file_ids"
+            ],
+            "properties": {
+              "image_file_ids": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 16,
+                "items": {
+                  "type": "string"
+                },
+                "description": "Reference image file IDs. Supported input formats: jpg, jpeg, png, webp."
+              }
+            }
+          }
+        ],
+        "x-tags": [
+          "Shared Schemas"
+        ]
+      },
+      "GPTImage2BaseRequest": {
+        "type": "object",
+        "required": [
+          "prompt"
+        ],
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "maxLength": 32000
+          },
+          "negative_prompt": {
+            "type": "string",
+            "maxLength": 32000
+          },
+          "aspect_ratio": {
+            "type": "string",
+            "enum": [
+              "1:1",
+              "3:2",
+              "2:3",
+              "3:4",
+              "4:3",
+              "4:5",
+              "5:4",
+              "16:9",
+              "9:16",
+              "21:9",
+              "auto"
+            ]
+          },
+          "output_count": {
+            "type": "integer",
+            "enum": [
+              1,
+              2,
+              4
+            ]
+          },
+          "resolution": {
+            "type": "string",
+            "enum": [
+              "0.5K",
+              "1K",
+              "2K",
+              "4K"
+            ]
+          },
+          "quality": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "preprocess_mode": {
+            "type": "string",
+            "enum": [
+              "off",
+              "auto"
+            ]
+          }
+        },
+        "x-tags": [
+          "Shared Schemas"
+        ]
+      },
+      "RemoveImageWatermarkRequest": {
+        "type": "object",
+        "required": [
+          "image_file_id"
+        ],
+        "properties": {
+          "image_file_id": {
+            "type": "string"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "manual"
+            ],
+            "default": "auto"
+          },
+          "boxes": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 5,
+            "items": {
+              "$ref": "#/components/schemas/RemoveImageWatermarkBox"
+            },
+            "description": "Required when mode is manual. Coordinates are percentages of image width and height."
+          }
+        },
+        "x-tags": [
+          "Shared Schemas"
+        ]
+      },
+      "RemoveImageWatermarkBox": {
+        "type": "object",
+        "required": [
+          "x1",
+          "y1",
+          "x2",
+          "y2"
+        ],
+        "properties": {
+          "x1": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "y1": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "x2": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "y2": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          }
+        },
+        "x-tags": [
+          "Shared Schemas"
+        ]
+      },
+      "RemoveBackgroundRequest": {
+        "type": "object",
+        "required": [
+          "image_file_id"
+        ],
+        "properties": {
+          "image_file_id": {
+            "type": "string",
+            "description": "File ID of the image to process. Supported input formats: jpg, jpeg, png, webp, heic."
+          },
+          "industry_type": {
+            "type": "string",
+            "enum": [
+              "portrait",
+              "product",
+              "human",
+              "person",
+              "humanv2",
+              "goods",
+              "commodity",
+              "productv2",
+              "general"
+            ],
+            "default": "portrait"
+          },
+          "quality_type": {
+            "type": "string",
+            "enum": [
+              "original",
+              "fast",
+              "speed",
+              "draft",
+              "preview",
+              "low"
+            ],
+            "default": "original"
+          },
+          "trim_transparent_background": {
+            "type": "boolean",
+            "default": false,
+            "description": "Trim extra transparent canvas around the cutout."
+          }
+        },
+        "x-tags": [
+          "Shared Schemas"
+        ]
+      },
+      "ImageUpscaleRequest": {
+        "type": "object",
+        "required": [
+          "image_file_id"
+        ],
+        "properties": {
+          "image_file_id": {
+            "type": "string",
+            "description": "File ID of the image to process. Supported input formats: heic, jpg, png, webp."
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "ai_super_resolution",
+              "super_resolution",
+              "enhance"
+            ],
+            "default": "ai_super_resolution"
+          },
+          "preset": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "hd"
+            ],
+            "default": "auto"
+          },
+          "type": {
+            "type": "string",
+            "maxLength": 20,
+            "default": "2X",
+            "description": "Upscale factor."
+          },
+          "enhance_face": {
+            "type": "boolean"
+          },
+          "enhance_quality": {
+            "type": "boolean"
+          },
+          "enhance_text": {
+            "type": "boolean"
+          }
+        },
+        "x-tags": [
+          "Shared Schemas"
+        ]
+      },
+      "PDFRemoveWatermarkRequest": {
+        "type": "object",
+        "required": [
+          "pdf_file_id"
+        ],
+        "properties": {
+          "pdf_file_id": {
+            "type": "string",
+            "description": "File ID of the PDF to process."
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "editable",
+              "ai"
+            ],
+            "default": "editable",
+            "description": "editable uses structured watermark removal; ai reconstructs pages as images."
+          }
+        },
+        "x-tags": [
+          "Shared Schemas"
+        ]
+      },
+      "SourceFile": {
+        "type": "object",
+        "required": [
+          "nanoid",
+          "name",
+          "type"
+        ],
+        "properties": {
+          "nanoid": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{21}$",
+            "description": "Client-generated 21-character nanoid used to match local files."
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 300,
+            "description": "Original file name. The suffix must match type."
+          },
+          "type": {
+            "type": "string",
+            "description": "File type, such as png, jpg, jpeg, webp, or pdf."
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "File size in bytes."
+          }
+        }
+      },
+      "FileBatchCreateRequest": {
+        "type": "object",
+        "required": [
+          "files"
+        ],
+        "properties": {
+          "files": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/SourceFile"
+            }
+          },
+          "upload_mode": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "simple",
+              "multipart"
+            ],
+            "description": "Upload mode. auto selects single PUT or multipart upload by file size. simple only accepts one upload_url and returns an error when the file exceeds the simple upload threshold. multipart may return upload_urls and requires the complete flow."
+          },
+          "storage_intent": {
+            "type": "string",
+            "enum": [
+              "temporary",
+              "permanent"
+            ],
+            "description": "Storage intent. Reference images usually use temporary."
+          }
+        }
+      },
+      "FileUploadItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nanoid": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "example": "Pending"
+          },
+          "size": {
+            "type": "integer"
+          },
+          "upload_url": {
+            "type": "string",
+            "description": "Single-file presigned PUT upload URL. Do not send the Pilio API Key. No complete call is needed after upload."
+          },
+          "upload_urls": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Multipart presigned PUT upload URLs for large files. Upload in order and collect the ETag response header from each part. Do not send the Pilio API Key."
+          },
+          "upload_id": {
+            "type": "string",
+            "description": "Object storage multipart upload ID."
+          }
+        }
+      },
+      "FileBatchCreateData": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FileUploadItem"
+            }
+          }
+        }
+      },
+      "FileBatchCreateEnvelope": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ResponseEnvelope"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/FileBatchCreateData"
+              }
+            }
+          }
+        ]
+      },
+      "CompletedPart": {
+        "type": "object",
+        "required": [
+          "part_number",
+          "etag"
+        ],
+        "properties": {
+          "part_number": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "etag": {
+            "type": "string"
+          }
+        }
+      },
+      "CompleteMultipartUploadRequest": {
+        "type": "object",
+        "required": [
+          "parts"
+        ],
+        "properties": {
+          "parts": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/CompletedPart"
+            },
+            "description": "Multipart upload completion data. part_number must start from 1 and remain consecutive. etag comes from each part PUT response header."
+          }
+        }
+      },
+      "CommonErrorCode": {
+        "type": "object",
+        "description": "Common business errors surfaced by the public API.",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "meaning": {
+            "type": "string"
+          },
+          "fix": {
+            "type": "string"
+          }
+        },
+        "examples": [
+          {
+            "code": "1402",
+            "meaning": "API Key missing, invalid, or revoked",
+            "fix": "Check Authorization or X-API-Key."
+          },
+          {
+            "code": "1505",
+            "meaning": "Too many files in one batch-create request",
+            "fix": "Split files into multiple requests."
+          },
+          {
+            "code": "1510",
+            "meaning": "Multipart upload not found or expired",
+            "fix": "Create a new file upload and retry all parts."
+          },
+          {
+            "code": "source_file_upload_not_completed",
+            "meaning": "Object was not uploaded before task creation",
+            "fix": "Finish PUT upload before creating the task."
+          }
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Public Basics",
+      "description": "Authentication, async task polling, and shared response conventions."
+    },
+    {
+      "name": "GPT Image 2",
+      "description": "GPT Image 2 generation and image edit task creation APIs."
+    },
+    {
+      "name": "Image Watermark Removal",
+      "description": "Image watermark removal task creation API."
+    },
+    {
+      "name": "Background Removal",
+      "description": "Image background removal task creation API."
+    },
+    {
+      "name": "Image Upscale",
+      "description": "Image upscaling task creation API."
+    },
+    {
+      "name": "PDF Watermark Removal",
+      "description": "PDF watermark removal task creation API."
+    },
+    {
+      "name": "Shared Schemas",
+      "description": "Shared schemas used by Pilio public API responses."
+    }
+  ],
+  "x-ai-usage": {
+    "rules": [
+      "Send the Pilio API Key only to https://pilio.ai/v1/* endpoints.",
+      "Do not send the Pilio API Key to upload_url, upload_urls, or download_url.",
+      "When creating tasks, pass FileUploadItem.id as image_file_id, image_file_ids, or pdf_file_id. Do not pass nanoid, upload_id, upload_url, or upload_urls.",
+      "For the simplest image upload flow, set upload_mode to simple so oversized files fail instead of returning multipart upload_urls.",
+      "If batch-create returns upload_url, PUT the raw file once and do not call complete.",
+      "If batch-create returns upload_urls, PUT chunks in order, collect each ETag response header, then call /v1/files/{id}/complete.",
+      "Poll task status until Succeeded or Failed. Do not parse natural-language message strings to infer task state."
+    ],
+    "polling": {
+      "initial_interval_seconds": 2,
+      "backoff_interval_seconds": 5,
+      "terminal_statuses": [
+        "Succeeded",
+        "Failed"
+      ]
+    },
+    "limits": {
+      "max_files_per_batch_create": 500,
+      "max_file_size_bytes": 2147483648,
+      "multipart_threshold_bytes": 5242880,
+      "upload_url_expire_seconds": 7200,
+      "download_url_expire_seconds": 86400,
+      "max_inflight_tasks": 20
+    }
+  }
+}
