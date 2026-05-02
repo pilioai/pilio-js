@@ -13,16 +13,31 @@ describe("PilioClient", () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ code: 200, message: "ok", data: { task_id: "task_1", status: "Pending", status_url: "/v1/tasks/task_1/status", result_url: "/v1/tasks/task_1/result" } }));
     const client = new PilioClient({ apiKey: "pilio_sk_test", baseURL: "https://example.test", fetch: fetchMock });
 
-    await client.images.gptImage2.generate({ prompt: "hello", aspect_ratio: "1:1" });
+    await client.images.gptImage2.create({ prompt: "hello", aspect_ratio: "1:1" });
 
     expect(fetchMock).toHaveBeenCalledWith(
-      "https://example.test/v1/images/gpt-image-2/generations",
+      "https://example.test/v1/images/gpt-image-2",
       expect.objectContaining({
         method: "POST",
         headers: expect.objectContaining({
           authorization: "Bearer pilio_sk_test",
           "content-type": "application/json",
         }),
+      }),
+    );
+  });
+
+  it("creates Nano Banana 2 tasks through the unified image endpoint", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ code: 200, message: "ok", data: { task_id: "task_nb_1", status: "Pending", status_url: "/v1/tasks/task_nb_1/status", result_url: "/v1/tasks/task_nb_1/result" } }));
+    const client = new PilioClient({ apiKey: "pilio_sk_test", baseURL: "https://example.test", fetch: fetchMock });
+
+    await client.images.nanoBanana2.create({ prompt: "hello", aspect_ratio: "1:1", resolution: "1K" });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://example.test/v1/images/nano-banana-2",
+      expect.objectContaining({
+        method: "POST",
+        body: expect.stringContaining('"resolution":"1K"'),
       }),
     );
   });

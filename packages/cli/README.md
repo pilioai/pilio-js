@@ -31,14 +31,14 @@ $env:PILIO_API_KEY="..."
 Run a task:
 
 ```bash
-pilio gpt-image-2 generate --prompt "A cinematic product photo" --aspect-ratio 3:2
+pilio gpt-image-2 --prompt "A cinematic product photo" --aspect-ratio 3:2
 ```
 
 Common commands:
 
 ```bash
-pilio gpt-image-2 generate --prompt <text> --aspect-ratio <ratio>
-pilio gpt-image-2 edit --input <path> --prompt <text>
+pilio gpt-image-2 --prompt <text> [--input <path>] [--aspect-ratio <ratio>]
+pilio nano-banana-2 --prompt <text> [--input <path>] [--aspect-ratio <ratio>] [--resolution <value>]
 pilio remove-image-watermark --input <path>
 pilio remove-background --input <path>
 pilio upscale-image --input <path>

@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-    "/v1/images/gpt-image-2/generations": {
+    "/v1/images/gpt-image-2": {
         parameters: {
             query?: never;
             header?: never;
@@ -14,17 +14,17 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Create a GPT Image 2 generation task
-         * @description Creates an asynchronous text-to-image task and returns polling URLs.
+         * Create a GPT Image 2 image task
+         * @description Creates an asynchronous GPT Image 2 task. Send only a prompt for text-to-image, or include image_file_ids for reference-image editing or composition.
          */
-        post: operations["createGPTImage2Generation"];
+        post: operations["createGPTImage2"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/v1/images/gpt-image-2/edits": {
+    "/v1/images/nano-banana-2": {
         parameters: {
             query?: never;
             header?: never;
@@ -34,10 +34,10 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Create a GPT Image 2 edit task
-         * @description Creates an asynchronous image edit task with 1 to 16 reference images.
+         * Create a Nano Banana 2 image task
+         * @description Creates an asynchronous Nano Banana 2 task. Send only a prompt for text-to-image, or include image_file_ids for reference-image editing or composition.
          */
-        post: operations["createGPTImage2Edit"];
+        post: operations["createNanoBanana2"];
         delete?: never;
         options?: never;
         head?: never;
@@ -269,15 +269,15 @@ export interface components {
              */
             download_url?: string;
         };
-        GPTImage2GenerationRequest: components["schemas"]["GPTImage2BaseRequest"] & Record<string, never>;
-        GPTImage2EditRequest: components["schemas"]["GPTImage2BaseRequest"] & {
-            /** @description Reference image file IDs. Supported input formats: jpg, jpeg, png, webp. */
-            image_file_ids: string[];
-        };
-        GPTImage2BaseRequest: {
+        GPTImage2Request: {
             prompt: string;
             negative_prompt?: string;
-            /** @enum {string} */
+            /** @description Optional reference image file IDs. Omit for text-to-image; pass 1 to 16 file IDs for reference-image editing or composition. Supported input formats: jpg, jpeg, png, webp. */
+            image_file_ids?: string[];
+            /**
+             * @description Required when image_file_ids is omitted. Optional when reference images are provided.
+             * @enum {string}
+             */
             aspect_ratio?: "1:1" | "3:2" | "2:3" | "3:4" | "4:3" | "4:5" | "5:4" | "16:9" | "9:16" | "21:9" | "auto";
             /** @enum {integer} */
             output_count?: 1 | 2 | 4;
@@ -285,6 +285,23 @@ export interface components {
             resolution?: "0.5K" | "1K" | "2K" | "4K";
             /** @enum {string} */
             quality?: "low" | "medium" | "high";
+            /** @enum {string} */
+            preprocess_mode?: "off" | "auto";
+        };
+        NanoBanana2Request: {
+            prompt: string;
+            negative_prompt?: string;
+            /** @description Optional reference image file IDs. Omit for text-to-image; pass 1 to 14 file IDs for reference-image editing or composition. Supported input formats: jpg, jpeg, png, webp. */
+            image_file_ids?: string[];
+            /**
+             * @description Required when image_file_ids is omitted. Optional when reference images are provided.
+             * @enum {string}
+             */
+            aspect_ratio?: "1:1" | "2:3" | "3:2" | "3:4" | "4:3" | "4:5" | "5:4" | "9:16" | "16:9" | "21:9" | "1:4" | "4:1" | "1:8" | "8:1";
+            /** @enum {integer} */
+            output_count?: 1 | 2 | 4;
+            /** @enum {string} */
+            resolution?: "0.5K" | "1K" | "2K" | "4K";
             /** @enum {string} */
             preprocess_mode?: "off" | "auto";
         };
@@ -408,6 +425,34 @@ export interface components {
             /** @description Multipart upload completion data. part_number must start from 1 and remain consecutive. etag comes from each part PUT response header. */
             parts: components["schemas"]["CompletedPart"][];
         };
+        /**
+         * @description Common business errors surfaced by the public API.
+         * @example {
+         *       "code": "1402",
+         *       "meaning": "API Key missing, invalid, or revoked",
+         *       "fix": "Check Authorization or X-API-Key."
+         *     }
+         * @example {
+         *       "code": "1505",
+         *       "meaning": "Too many files in one batch-create request",
+         *       "fix": "Split files into multiple requests."
+         *     }
+         * @example {
+         *       "code": "1510",
+         *       "meaning": "Multipart upload not found or expired",
+         *       "fix": "Create a new file upload and retry all parts."
+         *     }
+         * @example {
+         *       "code": "source_file_upload_not_completed",
+         *       "meaning": "Object was not uploaded before task creation",
+         *       "fix": "Finish PUT upload before creating the task."
+         *     }
+         */
+        CommonErrorCode: {
+            code?: string;
+            meaning?: string;
+            fix?: string;
+        };
     };
     responses: {
         /** @description Error response */
@@ -430,7 +475,7 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    createGPTImage2Generation: {
+    createGPTImage2: {
         parameters: {
             query?: never;
             header?: never;
@@ -439,7 +484,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["GPTImage2GenerationRequest"];
+                "application/json": components["schemas"]["GPTImage2Request"];
             };
         };
         responses: {
@@ -456,7 +501,7 @@ export interface operations {
             401: components["responses"]["ErrorResponse"];
         };
     };
-    createGPTImage2Edit: {
+    createNanoBanana2: {
         parameters: {
             query?: never;
             header?: never;
@@ -465,7 +510,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["GPTImage2EditRequest"];
+                "application/json": components["schemas"]["NanoBanana2Request"];
             };
         };
         responses: {

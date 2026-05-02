@@ -131,8 +131,8 @@ const server = createServer(async (req, res) => {
 });
 
 const taskCreateRoutes = {
-  "/v1/images/gpt-image-2/generations": { taskId: "task_generate" },
-  "/v1/images/gpt-image-2/edits": { taskId: "task_edit" },
+  "/v1/images/gpt-image-2": { taskId: "task_gpt_image_2" },
+  "/v1/images/nano-banana-2": { taskId: "task_nano_banana_2" },
   "/v1/images/remove-watermark": { taskId: "task_remove_image_watermark" },
   "/v1/images/remove-background": { taskId: "task_remove_background" },
   "/v1/images/upscale": { taskId: "task_upscale_image" },
@@ -143,8 +143,9 @@ await new Promise((resolveListen) => server.listen(0, "127.0.0.1", resolveListen
 const baseURL = currentBaseURL();
 
 try {
-  await expectCLI(["gpt-image-2", "generate", "--prompt", "hello", "--aspect-ratio", "1:1"], "task_generate");
-  await expectCLI(["gpt-image-2", "edit", "--input", files.refA, "--input", files.refB, "--prompt", "make it crisp"], "task_edit");
+  await expectCLI(["gpt-image-2", "--prompt", "hello", "--aspect-ratio", "1:1"], "task_gpt_image_2");
+  await expectCLI(["gpt-image-2", "--input", files.refA, "--input", files.refB, "--prompt", "make it crisp"], "task_gpt_image_2");
+  await expectCLI(["nano-banana-2", "--prompt", "hello banana", "--aspect-ratio", "1:1", "--resolution", "1K"], "task_nano_banana_2");
   await expectCLI(["remove-image-watermark", "--input", files.watermarked], "task_remove_image_watermark");
   await expectCLI(["remove-background", "--input", files.portrait], "task_remove_background");
   await expectCLI(["upscale-image", "--input", files.small], "task_upscale_image");
@@ -153,14 +154,18 @@ try {
 
   assertAllPilioRequestsAreAuthenticated();
   assertAllUploadsOmitAPIKey();
-  assertTaskBody("/v1/images/gpt-image-2/generations", (body) => {
+  assertTaskBody("/v1/images/gpt-image-2", (body) => {
     assert(body.prompt === "hello", "generation prompt mismatch");
     assert(body.aspect_ratio === "1:1", "generation aspect ratio mismatch");
   });
-  assertTaskBody("/v1/images/gpt-image-2/edits", (body) => {
+  assertTaskBody("/v1/images/gpt-image-2", (body) => {
     assert(Array.isArray(body.image_file_ids), "edit image_file_ids missing");
     assert(body.image_file_ids.length === 2, "edit should upload two reference images");
     assert(body.prompt === "make it crisp", "edit prompt mismatch");
+  });
+  assertTaskBody("/v1/images/nano-banana-2", (body) => {
+    assert(body.prompt === "hello banana", "Nano Banana 2 prompt mismatch");
+    assert(body.resolution === "1K", "Nano Banana 2 resolution mismatch");
   });
   assertTaskBody("/v1/images/remove-watermark", (body) => assertHasFileID(body, "remove image watermark"));
   assertTaskBody("/v1/images/remove-background", (body) => assertHasFileID(body, "remove background"));
@@ -212,8 +217,9 @@ function assertAllUploadsOmitAPIKey() {
 }
 
 function assertTaskBody(path, assertBody) {
-  const request = observed.taskCreates.find((item) => item.path === path);
+  const request = observed.taskCreates.find((item) => item.path === path && !item.asserted);
   assert(Boolean(request), `missing task request for ${path}`);
+  request.asserted = true;
   assertBody(request.payload);
 }
 

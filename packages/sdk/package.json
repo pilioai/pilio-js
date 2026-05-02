@@ -27,7 +27,7 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
-  "keywords": ["pilio", "sdk", "gpt-image-2", "image-api"],
+  "keywords": ["pilio", "sdk", "gpt-image-2", "nano-banana-2", "image-api"],
   "license": "MIT",
   "engines": {
     "node": ">=18"

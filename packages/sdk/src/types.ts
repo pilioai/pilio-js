@@ -6,9 +6,9 @@ export type TaskStatusResult = components["schemas"]["TaskStatusResult"];
 export type TaskResult = components["schemas"]["TaskResult"];
 export type ResultFile = components["schemas"]["ResultFile"];
 export type FileUploadItem = components["schemas"]["FileUploadItem"];
-export type GPTImage2EditRequest = components["schemas"]["GPTImage2EditRequest"];
+export type GPTImage2Request = components["schemas"]["GPTImage2Request"];
+export type NanoBanana2Request = components["schemas"]["NanoBanana2Request"];
 
-type GPTImage2BaseRequest = components["schemas"]["GPTImage2BaseRequest"];
 type OptionalDefaults<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
 export type RemoveImageWatermarkRequest = OptionalDefaults<components["schemas"]["RemoveImageWatermarkRequest"], "mode">;
@@ -18,10 +18,6 @@ export type RemoveBackgroundRequest = OptionalDefaults<
 >;
 export type ImageUpscaleRequest = OptionalDefaults<components["schemas"]["ImageUpscaleRequest"], "method" | "preset" | "type">;
 export type PDFRemoveWatermarkRequest = OptionalDefaults<components["schemas"]["PDFRemoveWatermarkRequest"], "mode">;
-
-export type GPTImage2GenerationRequest = GPTImage2BaseRequest & {
-  aspect_ratio: NonNullable<GPTImage2BaseRequest["aspect_ratio"]>;
-};
 
 export type FetchLike = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
 

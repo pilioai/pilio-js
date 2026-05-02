@@ -3,16 +3,16 @@
   "info": {
     "title": "Pilio Public API",
     "version": "1.0.0",
-    "description": "Public API for Pilio GPT Image 2, image watermark removal, background removal, image upscale, and PDF watermark removal tasks. API tasks reuse the normal Pilio credit balance and consume 3x the web base credit cost by default; large customer accounts may have a custom multiplier. This specification is optimized for AI coding agents: create files first, upload to presigned URLs, create tasks with file IDs, poll status, then download result URLs.",
-    "license": {
-      "name": "MIT",
-      "url": "https://opensource.org/license/mit"
-    }
+    "description": "Public API for Pilio GPT Image 2, Nano Banana 2, image watermark removal, background removal, image upscale, and PDF watermark removal tasks. API tasks reuse the normal Pilio credit balance and consume 3x the web base credit cost by default; large customer accounts may have a custom multiplier. This specification is optimized for AI coding agents: create files first, upload to presigned URLs, create tasks with file IDs, poll status, then download result URLs."
   },
   "servers": [
     {
       "url": "https://pilio.ai",
       "description": "Production"
+    },
+    {
+      "url": "http://localhost:38080",
+      "description": "Local frontend proxy"
     }
   ],
   "security": [
@@ -24,28 +24,39 @@
     }
   ],
   "paths": {
-    "/v1/images/gpt-image-2/generations": {
+    "/v1/images/gpt-image-2": {
       "post": {
         "tags": [
           "GPT Image 2"
         ],
-        "summary": "Create a GPT Image 2 generation task",
-        "description": "Creates an asynchronous text-to-image task and returns polling URLs.",
-        "operationId": "createGPTImage2Generation",
+        "summary": "Create a GPT Image 2 image task",
+        "description": "Creates an asynchronous GPT Image 2 task. Send only a prompt for text-to-image, or include image_file_ids for reference-image editing or composition.",
+        "operationId": "createGPTImage2",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/GPTImage2GenerationRequest"
+                "$ref": "#/components/schemas/GPTImage2Request"
               },
               "examples": {
-                "basic": {
+                "textToImage": {
                   "value": {
                     "prompt": "A cinematic product photo of an orange perfume bottle",
                     "aspect_ratio": "3:2",
                     "output_count": 2,
                     "quality": "high"
+                  }
+                },
+                "withReferences": {
+                  "value": {
+                    "prompt": "Turn these references into a polished studio product photo",
+                    "image_file_ids": [
+                      "123456789",
+                      "123456790"
+                    ],
+                    "aspect_ratio": "auto",
+                    "quality": "medium"
                   }
                 }
               }
@@ -72,31 +83,39 @@
         }
       }
     },
-    "/v1/images/gpt-image-2/edits": {
+    "/v1/images/nano-banana-2": {
       "post": {
         "tags": [
-          "GPT Image 2"
+          "Nano Banana 2"
         ],
-        "summary": "Create a GPT Image 2 edit task",
-        "description": "Creates an asynchronous image edit task with 1 to 16 reference images.",
-        "operationId": "createGPTImage2Edit",
+        "summary": "Create a Nano Banana 2 image task",
+        "description": "Creates an asynchronous Nano Banana 2 task. Send only a prompt for text-to-image, or include image_file_ids for reference-image editing or composition.",
+        "operationId": "createNanoBanana2",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/GPTImage2EditRequest"
+                "$ref": "#/components/schemas/NanoBanana2Request"
               },
               "examples": {
-                "basic": {
+                "withReferences": {
                   "value": {
-                    "prompt": "Turn this reference into a studio product photo",
+                    "prompt": "Turn these references into a clean product poster",
                     "image_file_ids": [
                       "123456789",
                       "123456790"
                     ],
-                    "aspect_ratio": "auto",
-                    "quality": "medium"
+                    "aspect_ratio": "16:9",
+                    "resolution": "1K"
+                  }
+                },
+                "textToImage": {
+                  "value": {
+                    "prompt": "A clean editorial product poster with crisp typography",
+                    "aspect_ratio": "1:1",
+                    "output_count": 1,
+                    "resolution": "0.5K"
                   }
                 }
               }
@@ -781,50 +800,7 @@
           "Shared Schemas"
         ]
       },
-      "GPTImage2GenerationRequest": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/GPTImage2BaseRequest"
-          },
-          {
-            "type": "object",
-            "required": [
-              "aspect_ratio"
-            ]
-          }
-        ],
-        "x-tags": [
-          "Shared Schemas"
-        ]
-      },
-      "GPTImage2EditRequest": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/GPTImage2BaseRequest"
-          },
-          {
-            "type": "object",
-            "required": [
-              "image_file_ids"
-            ],
-            "properties": {
-              "image_file_ids": {
-                "type": "array",
-                "minItems": 1,
-                "maxItems": 16,
-                "items": {
-                  "type": "string"
-                },
-                "description": "Reference image file IDs. Supported input formats: jpg, jpeg, png, webp."
-              }
-            }
-          }
-        ],
-        "x-tags": [
-          "Shared Schemas"
-        ]
-      },
-      "GPTImage2BaseRequest": {
+      "GPTImage2Request": {
         "type": "object",
         "required": [
           "prompt"
@@ -837,6 +813,15 @@
           "negative_prompt": {
             "type": "string",
             "maxLength": 32000
+          },
+          "image_file_ids": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 16,
+            "items": {
+              "type": "string"
+            },
+            "description": "Optional reference image file IDs. Omit for text-to-image; pass 1 to 16 file IDs for reference-image editing or composition. Supported input formats: jpg, jpeg, png, webp."
           },
           "aspect_ratio": {
             "type": "string",
@@ -852,7 +837,8 @@
               "9:16",
               "21:9",
               "auto"
-            ]
+            ],
+            "description": "Required when image_file_ids is omitted. Optional when reference images are provided."
           },
           "output_count": {
             "type": "integer",
@@ -877,6 +863,78 @@
               "low",
               "medium",
               "high"
+            ]
+          },
+          "preprocess_mode": {
+            "type": "string",
+            "enum": [
+              "off",
+              "auto"
+            ]
+          }
+        },
+        "x-tags": [
+          "Shared Schemas"
+        ]
+      },
+      "NanoBanana2Request": {
+        "type": "object",
+        "required": [
+          "prompt"
+        ],
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "maxLength": 32000
+          },
+          "negative_prompt": {
+            "type": "string",
+            "maxLength": 32000
+          },
+          "image_file_ids": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 14,
+            "items": {
+              "type": "string"
+            },
+            "description": "Optional reference image file IDs. Omit for text-to-image; pass 1 to 14 file IDs for reference-image editing or composition. Supported input formats: jpg, jpeg, png, webp."
+          },
+          "aspect_ratio": {
+            "type": "string",
+            "enum": [
+              "1:1",
+              "2:3",
+              "3:2",
+              "3:4",
+              "4:3",
+              "4:5",
+              "5:4",
+              "9:16",
+              "16:9",
+              "21:9",
+              "1:4",
+              "4:1",
+              "1:8",
+              "8:1"
+            ],
+            "description": "Required when image_file_ids is omitted. Optional when reference images are provided."
+          },
+          "output_count": {
+            "type": "integer",
+            "enum": [
+              1,
+              2,
+              4
+            ]
+          },
+          "resolution": {
+            "type": "string",
+            "enum": [
+              "0.5K",
+              "1K",
+              "2K",
+              "4K"
             ]
           },
           "preprocess_mode": {
@@ -1234,6 +1292,43 @@
             "description": "Multipart upload completion data. part_number must start from 1 and remain consecutive. etag comes from each part PUT response header."
           }
         }
+      },
+      "CommonErrorCode": {
+        "type": "object",
+        "description": "Common business errors surfaced by the public API.",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "meaning": {
+            "type": "string"
+          },
+          "fix": {
+            "type": "string"
+          }
+        },
+        "examples": [
+          {
+            "code": "1402",
+            "meaning": "API Key missing, invalid, or revoked",
+            "fix": "Check Authorization or X-API-Key."
+          },
+          {
+            "code": "1505",
+            "meaning": "Too many files in one batch-create request",
+            "fix": "Split files into multiple requests."
+          },
+          {
+            "code": "1510",
+            "meaning": "Multipart upload not found or expired",
+            "fix": "Create a new file upload and retry all parts."
+          },
+          {
+            "code": "source_file_upload_not_completed",
+            "meaning": "Object was not uploaded before task creation",
+            "fix": "Finish PUT upload before creating the task."
+          }
+        ]
       }
     }
   },

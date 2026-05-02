@@ -30,7 +30,7 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
-  "keywords": ["pilio", "cli", "gpt-image-2", "image-api"],
+  "keywords": ["pilio", "cli", "gpt-image-2", "nano-banana-2", "image-api"],
   "license": "MIT",
   "engines": {
     "node": ">=18"

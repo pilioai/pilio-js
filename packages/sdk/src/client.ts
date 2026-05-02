@@ -2,9 +2,9 @@ import { PilioAPIError, PilioUploadError } from "./errors";
 import type {
   FileUploadItem,
   FetchLike,
-  GPTImage2EditRequest,
-  GPTImage2GenerationRequest,
+  GPTImage2Request,
   ImageUpscaleRequest,
+  NanoBanana2Request,
   PDFRemoveWatermarkRequest,
   PilioClientOptions,
   RemoveBackgroundRequest,
@@ -71,9 +71,10 @@ export class PilioClient {
 
   readonly images = {
     gptImage2: {
-      generate: (input: GPTImage2GenerationRequest) =>
-        this.post<TaskCreateResult>("/v1/images/gpt-image-2/generations", input),
-      edit: (input: GPTImage2EditRequest) => this.post<TaskCreateResult>("/v1/images/gpt-image-2/edits", input),
+      create: (input: GPTImage2Request) => this.post<TaskCreateResult>("/v1/images/gpt-image-2", input),
+    },
+    nanoBanana2: {
+      create: (input: NanoBanana2Request) => this.post<TaskCreateResult>("/v1/images/nano-banana-2", input),
     },
     removeWatermark: (input: RemoveImageWatermarkRequest) =>
       this.post<TaskCreateResult>("/v1/images/remove-watermark", input),
@@ -181,4 +182,3 @@ export class PilioClient {
     return requireData(envelope, path);
   }
 }
-

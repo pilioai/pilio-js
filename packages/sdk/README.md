@@ -19,7 +19,7 @@ const client = new PilioClient({
   apiKey: process.env.PILIO_API_KEY!,
 });
 
-const task = await client.images.gptImage2.generate({
+const task = await client.images.gptImage2.create({
   prompt: "A cinematic product photo of an orange perfume bottle",
   aspect_ratio: "3:2",
 });

@@ -35,12 +35,16 @@ try {
 
   const commands = [
     {
-      name: "gpt-image-2 generate",
-      args: ["gpt-image-2", "generate", "--prompt", "A tiny red square icon on white background", "--aspect-ratio", "1:1"],
+      name: "gpt-image-2",
+      args: ["gpt-image-2", "--prompt", "A tiny red square icon on white background", "--aspect-ratio", "1:1"],
     },
     {
-      name: "gpt-image-2 edit",
-      args: ["gpt-image-2", "edit", "--input", files.reference, "--prompt", "Make the image cleaner"],
+      name: "gpt-image-2 reference edit",
+      args: ["gpt-image-2", "--input", files.reference, "--prompt", "Make the image cleaner"],
+    },
+    {
+      name: "nano-banana-2",
+      args: ["nano-banana-2", "--prompt", "A tiny yellow square icon on white background", "--aspect-ratio", "1:1", "--resolution", "1K"],
     },
     {
       name: "remove-image-watermark",

@@ -20,8 +20,8 @@ type ParsedArgs = {
 const HELP = `Usage: pilio <command> [options]
 
 Commands:
-  gpt-image-2 generate --prompt <text> --aspect-ratio <ratio>
-  gpt-image-2 edit --input <path> --prompt <text>
+  gpt-image-2 --prompt <text> [--input <path>] [--aspect-ratio <ratio>]
+  nano-banana-2 --prompt <text> [--input <path>] [--aspect-ratio <ratio>]
   remove-image-watermark --input <path>
   remove-background --input <path>
   upscale-image --input <path>
@@ -104,28 +104,19 @@ export function createCommandRunner(options: CommandRunnerOptions) {
       return;
     }
 
-    if (command === "gpt-image-2" && subcommand === "generate") {
-      const result = await options.client.images.gptImage2.generate({
-        prompt: requireString(parsed.options, "prompt"),
-        aspect_ratio: requireString(parsed.options, "aspect-ratio") as never,
-        ...(optionalString(parsed.options, "quality") ? { quality: optionalString(parsed.options, "quality") as never } : {}),
-      });
-      printJSON(output, result);
+    if (command === "gpt-image-2") {
+      if (subcommand) {
+        throw new Error("Use unified syntax: pilio gpt-image-2 --prompt <text> [--input <path>]");
+      }
+      await createImageTask(options, "gpt-image-2", parsed.options);
       return;
     }
 
-    if (command === "gpt-image-2" && subcommand === "edit") {
-      const inputPaths = stringList(parsed.options, "input");
-      if (inputPaths.length === 0) {
-        throw new Error("Missing required option --input");
+    if (command === "nano-banana-2") {
+      if (subcommand) {
+        throw new Error("Use unified syntax: pilio nano-banana-2 --prompt <text> [--input <path>]");
       }
-      const files = await Promise.all(inputPaths.map((inputPath) => uploadInput(options, inputPath)));
-      const result = await options.client.images.gptImage2.edit({
-        prompt: requireString(parsed.options, "prompt"),
-        image_file_ids: files.map((file) => file.id).filter(Boolean) as string[],
-        ...(optionalString(parsed.options, "aspect-ratio") ? { aspect_ratio: optionalString(parsed.options, "aspect-ratio") as never } : {}),
-      });
-      printJSON(output, result);
+      await createImageTask(options, "nano-banana-2", parsed.options);
       return;
     }
 
@@ -185,3 +176,20 @@ async function uploadInput(options: CommandRunnerOptions, inputPath: string) {
   });
 }
 
+async function createImageTask(options: CommandRunnerOptions, model: "gpt-image-2" | "nano-banana-2", parsedOptions: Record<string, string | true | string[]>) {
+  const inputPaths = stringList(parsedOptions, "input");
+  const files = await Promise.all(inputPaths.map((inputPath) => uploadInput(options, inputPath)));
+  const payload = {
+    prompt: requireString(parsedOptions, "prompt"),
+    ...(files.length > 0 ? { image_file_ids: files.map((file) => file.id).filter(Boolean) as string[] } : {}),
+    ...(optionalString(parsedOptions, "aspect-ratio") ? { aspect_ratio: optionalString(parsedOptions, "aspect-ratio") as never } : {}),
+    ...(optionalString(parsedOptions, "quality") ? { quality: optionalString(parsedOptions, "quality") as never } : {}),
+    ...(optionalString(parsedOptions, "resolution") ? { resolution: optionalString(parsedOptions, "resolution") as never } : {}),
+  };
+  const result =
+    model === "gpt-image-2"
+      ? await options.client.images.gptImage2.create(payload as never)
+      : await options.client.images.nanoBanana2.create(payload as never);
+  const output = options.output ?? console.log;
+  printJSON(output, result);
+}
