@@ -1,6 +1,6 @@
 {
   "name": "@pilio/sdk",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Official JavaScript and TypeScript SDK for the Pilio public API.",
   "type": "module",
   "main": "./dist/index.cjs",
