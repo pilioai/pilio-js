@@ -29,6 +29,9 @@
   },
   "keywords": ["pilio", "sdk", "gpt-image-2", "image-api"],
   "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
   "devDependencies": {
     "tsup": "^8.5.0",
     "typescript": "^5.9.0",

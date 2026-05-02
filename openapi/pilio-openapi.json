@@ -3,16 +3,16 @@
   "info": {
     "title": "Pilio Public API",
     "version": "1.0.0",
-    "description": "Public API for Pilio GPT Image 2, image watermark removal, background removal, image upscale, and PDF watermark removal tasks. API tasks reuse the normal Pilio credit balance and consume 3x the web base credit cost by default; large customer accounts may have a custom multiplier. This specification is optimized for AI coding agents: create files first, upload to presigned URLs, create tasks with file IDs, poll status, then download result URLs."
+    "description": "Public API for Pilio GPT Image 2, image watermark removal, background removal, image upscale, and PDF watermark removal tasks. API tasks reuse the normal Pilio credit balance and consume 3x the web base credit cost by default; large customer accounts may have a custom multiplier. This specification is optimized for AI coding agents: create files first, upload to presigned URLs, create tasks with file IDs, poll status, then download result URLs.",
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/license/mit"
+    }
   },
   "servers": [
     {
       "url": "https://pilio.ai",
       "description": "Production"
-    },
-    {
-      "url": "http://localhost:38080",
-      "description": "Local frontend proxy"
     }
   ],
   "security": [
@@ -1234,43 +1234,6 @@
             "description": "Multipart upload completion data. part_number must start from 1 and remain consecutive. etag comes from each part PUT response header."
           }
         }
-      },
-      "CommonErrorCode": {
-        "type": "object",
-        "description": "Common business errors surfaced by the public API.",
-        "properties": {
-          "code": {
-            "type": "string"
-          },
-          "meaning": {
-            "type": "string"
-          },
-          "fix": {
-            "type": "string"
-          }
-        },
-        "examples": [
-          {
-            "code": "1402",
-            "meaning": "API Key missing, invalid, or revoked",
-            "fix": "Check Authorization or X-API-Key."
-          },
-          {
-            "code": "1505",
-            "meaning": "Too many files in one batch-create request",
-            "fix": "Split files into multiple requests."
-          },
-          {
-            "code": "1510",
-            "meaning": "Multipart upload not found or expired",
-            "fix": "Create a new file upload and retry all parts."
-          },
-          {
-            "code": "source_file_upload_not_completed",
-            "meaning": "Object was not uploaded before task creation",
-            "fix": "Finish PUT upload before creating the task."
-          }
-        ]
       }
     }
   },

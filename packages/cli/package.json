@@ -32,6 +32,9 @@
   },
   "keywords": ["pilio", "cli", "gpt-image-2", "image-api"],
   "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
   "dependencies": {
     "@pilio/sdk": "workspace:*"
   },

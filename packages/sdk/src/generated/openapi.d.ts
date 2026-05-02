@@ -408,34 +408,6 @@ export interface components {
             /** @description Multipart upload completion data. part_number must start from 1 and remain consecutive. etag comes from each part PUT response header. */
             parts: components["schemas"]["CompletedPart"][];
         };
-        /**
-         * @description Common business errors surfaced by the public API.
-         * @example {
-         *       "code": "1402",
-         *       "meaning": "API Key missing, invalid, or revoked",
-         *       "fix": "Check Authorization or X-API-Key."
-         *     }
-         * @example {
-         *       "code": "1505",
-         *       "meaning": "Too many files in one batch-create request",
-         *       "fix": "Split files into multiple requests."
-         *     }
-         * @example {
-         *       "code": "1510",
-         *       "meaning": "Multipart upload not found or expired",
-         *       "fix": "Create a new file upload and retry all parts."
-         *     }
-         * @example {
-         *       "code": "source_file_upload_not_completed",
-         *       "meaning": "Object was not uploaded before task creation",
-         *       "fix": "Finish PUT upload before creating the task."
-         *     }
-         */
-        CommonErrorCode: {
-            code?: string;
-            meaning?: string;
-            fix?: string;
-        };
     };
     responses: {
         /** @description Error response */
