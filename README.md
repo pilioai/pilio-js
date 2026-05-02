@@ -7,6 +7,70 @@ Official JavaScript and TypeScript developer tooling for Pilio.
 
 The OpenAPI contract is copied from the Pilio product repository into `openapi/pilio-openapi.json`.
 
+## Install
+
+```bash
+pnpm add @pilio/sdk
+pnpm add -g @pilio/cli
+```
+
+You can also run the CLI without installing it globally:
+
+```bash
+pnpm dlx @pilio/cli --help
+```
+
+## API key
+
+Create a Pilio API key in your Pilio account, then expose it through the local process environment:
+
+```bash
+export PILIO_API_KEY="..."
+```
+
+PowerShell:
+
+```powershell
+$env:PILIO_API_KEY="..."
+```
+
+Keep API keys in environment variables or a secure secret store. Do not commit real credentials.
+
+## CLI example
+
+```bash
+pilio gpt-image-2 generate --prompt "A cinematic product photo" --aspect-ratio 3:2
+pilio task wait <task_id>
+```
+
+## SDK upload example
+
+```ts
+import { readFile } from "node:fs/promises";
+import { PilioClient } from "@pilio/sdk";
+
+const client = new PilioClient({
+  apiKey: process.env.PILIO_API_KEY!,
+});
+
+const image = await readFile("portrait.png");
+const file = await client.files.upload({
+  name: "portrait.png",
+  type: "png",
+  data: new Blob([image]),
+  size: image.byteLength,
+});
+
+const task = await client.images.removeBackground({
+  image_file_id: file.id!,
+});
+
+const result = await client.tasks.wait(task.task_id);
+console.log(result.files);
+```
+
+## Development
+
 ```bash
 pnpm install
 pnpm sync:openapi

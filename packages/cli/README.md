@@ -16,10 +16,22 @@ pnpm dlx @pilio/cli <command>
 
 ## Usage
 
-Set your API key in the environment:
+Create a Pilio API key in your Pilio account, then set it in the environment:
 
 ```bash
-PILIO_API_KEY=... pilio gpt-image-2 generate --prompt "A cinematic product photo" --aspect-ratio 3:2
+export PILIO_API_KEY="..."
+```
+
+PowerShell:
+
+```powershell
+$env:PILIO_API_KEY="..."
+```
+
+Run a task:
+
+```bash
+pilio gpt-image-2 generate --prompt "A cinematic product photo" --aspect-ratio 3:2
 ```
 
 Common commands:
@@ -33,6 +45,8 @@ pilio upscale-image --input <path>
 pilio remove-pdf-watermark --input <path>
 pilio task wait <task_id>
 ```
+
+Most commands return a task payload. Use `pilio task wait <task_id>` to wait for completion and print result files.
 
 Keep API keys in environment variables or a secure secret store. Do not commit real credentials.
 
