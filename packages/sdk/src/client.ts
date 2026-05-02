@@ -169,7 +169,17 @@ export class PilioClient {
     }
 
     const response = await this.fetchImpl(`${this.baseURL}${path}`, init);
-    const envelope = (await response.json()) as ResponseEnvelope<T>;
+    const responseText = await response.text();
+    let envelope: ResponseEnvelope<T> | undefined;
+    try {
+      envelope = JSON.parse(responseText) as ResponseEnvelope<T>;
+    } catch {
+      throw new PilioAPIError(`Pilio API request failed with HTTP ${response.status}`, {
+        code: response.status,
+        status: response.status,
+        data: { body: responseText.slice(0, 500) },
+      });
+    }
 
     if (!response.ok || envelope.code !== 200) {
       throw new PilioAPIError(envelope.message || `Pilio API request failed with HTTP ${response.status}`, {

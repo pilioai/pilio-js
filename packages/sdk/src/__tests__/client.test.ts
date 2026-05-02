@@ -54,6 +54,18 @@ describe("PilioClient", () => {
     } satisfies Partial<PilioAPIError>);
   });
 
+  it("throws PilioAPIError for non-JSON API responses", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response("404 page not found", { status: 404, headers: { "content-type": "text/plain" } }));
+    const client = new PilioClient({ apiKey: "pilio_sk_test", baseURL: "https://example.test", fetch: fetchMock });
+
+    await expect(client.images.gptImage2.create({ prompt: "hello", aspect_ratio: "1:1" })).rejects.toMatchObject({
+      name: "PilioAPIError",
+      code: 404,
+      status: 404,
+      data: { body: "404 page not found" },
+    } satisfies Partial<PilioAPIError>);
+  });
+
   it("polls a task until it succeeds", async () => {
     const fetchMock = vi
       .fn()
