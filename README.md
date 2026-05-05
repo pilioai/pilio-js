@@ -44,6 +44,18 @@ pilio nano-banana-2 --prompt "A clean product poster" --aspect-ratio 1:1 --resol
 pilio task wait <task_id>
 ```
 
+## Try online
+
+Use the hosted Pilio tools to test the same workflows in a browser before automating them:
+
+- [GPT Image 2](https://pilio.ai/)
+- [Nano Banana 2](https://pilio.ai/nano-banana-2)
+- [Image watermark remover](https://pilio.ai/image-watermark-remover)
+- [Background remover](https://pilio.ai/background-remover)
+- [Image upscaler](https://pilio.ai/image-upscaler)
+- [PDF watermark remover](https://pilio.ai/pdf-watermark-remover)
+- [Developer documentation](https://pilio.ai/developers)
+
 ## SDK upload example
 
 ```ts
