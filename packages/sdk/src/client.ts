@@ -71,7 +71,7 @@ export class PilioClient {
 
   readonly images = {
     gptImage2: {
-      create: (input: GPTImage2Request) => this.post<TaskCreateResult>("/v1/images/gpt-image-2", input),
+      create: (input: GPTImage2Request) => this.createGPTImage2(input),
     },
     nanoBanana2: {
       create: (input: NanoBanana2Request) => this.post<TaskCreateResult>("/v1/images/nano-banana-2", input),
@@ -155,6 +155,22 @@ export class PilioClient {
 
   private async post<T>(path: string, body: unknown): Promise<T> {
     return this.request<T>("POST", path, body);
+  }
+
+  private async createGPTImage2(input: GPTImage2Request): Promise<TaskCreateResult> {
+    try {
+      return await this.post<TaskCreateResult>("/v1/images/gpt-image-2", input);
+    } catch (error) {
+      if (!(error instanceof PilioAPIError) || error.status !== 404) {
+        throw error;
+      }
+
+      const legacyPath =
+        input.image_file_ids && input.image_file_ids.length > 0
+          ? "/v1/images/gpt-image-2/edits"
+          : "/v1/images/gpt-image-2/generations";
+      return this.post<TaskCreateResult>(legacyPath, input);
+    }
   }
 
   private async request<T>(method: string, path: string, body?: unknown): Promise<T> {

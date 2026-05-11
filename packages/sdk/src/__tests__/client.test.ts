@@ -42,6 +42,45 @@ describe("PilioClient", () => {
     );
   });
 
+  it("falls back to the legacy GPT Image 2 generation endpoint when the unified endpoint is not deployed", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(new Response("404 page not found", { status: 404, headers: { "content-type": "text/plain" } }))
+      .mockResolvedValueOnce(jsonResponse({ code: 200, message: "ok", data: { task_id: "task_legacy_generate", status: "Pending" } }));
+    const client = new PilioClient({ apiKey: "pilio_sk_test", baseURL: "https://example.test", fetch: fetchMock });
+
+    const result = await client.images.gptImage2.create({ prompt: "hello", aspect_ratio: "1:1" });
+
+    expect(result.task_id).toBe("task_legacy_generate");
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      1,
+      "https://example.test/v1/images/gpt-image-2",
+      expect.objectContaining({ method: "POST" }),
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "https://example.test/v1/images/gpt-image-2/generations",
+      expect.objectContaining({ method: "POST" }),
+    );
+  });
+
+  it("falls back to the legacy GPT Image 2 edit endpoint when reference images are provided", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(new Response("404 page not found", { status: 404, headers: { "content-type": "text/plain" } }))
+      .mockResolvedValueOnce(jsonResponse({ code: 200, message: "ok", data: { task_id: "task_legacy_edit", status: "Pending" } }));
+    const client = new PilioClient({ apiKey: "pilio_sk_test", baseURL: "https://example.test", fetch: fetchMock });
+
+    const result = await client.images.gptImage2.create({ prompt: "hello", image_file_ids: ["file_1"] });
+
+    expect(result.task_id).toBe("task_legacy_edit");
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "https://example.test/v1/images/gpt-image-2/edits",
+      expect.objectContaining({ method: "POST" }),
+    );
+  });
+
   it("throws PilioAPIError for non-200 envelope codes", async () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ code: 1402, message: "invalid api key", data: { reason: "invalid_api_key" } }, { status: 401 }));
     const client = new PilioClient({ apiKey: "pilio_sk_bad", baseURL: "https://example.test", fetch: fetchMock });
@@ -58,7 +97,7 @@ describe("PilioClient", () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response("404 page not found", { status: 404, headers: { "content-type": "text/plain" } }));
     const client = new PilioClient({ apiKey: "pilio_sk_test", baseURL: "https://example.test", fetch: fetchMock });
 
-    await expect(client.images.gptImage2.create({ prompt: "hello", aspect_ratio: "1:1" })).rejects.toMatchObject({
+    await expect(client.tasks.status("missing_task")).rejects.toMatchObject({
       name: "PilioAPIError",
       code: 404,
       status: 404,
