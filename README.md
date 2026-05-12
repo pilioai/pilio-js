@@ -40,7 +40,6 @@ Keep API keys in environment variables or a secure secret store. Do not commit r
 
 ```bash
 pilio gpt-image-2 --prompt "A cinematic product photo" --aspect-ratio 3:2
-pilio nano-banana-2 --prompt "A clean product poster" --aspect-ratio 1:1 --resolution 1K
 pilio task wait <task_id>
 ```
 
@@ -49,7 +48,6 @@ pilio task wait <task_id>
 Use the hosted Pilio tools to test the same workflows in a browser before automating them:
 
 - [GPT Image 2](https://pilio.ai/)
-- [Nano Banana 2](https://pilio.ai/nano-banana-2)
 - [Image watermark remover](https://pilio.ai/image-watermark-remover)
 - [Background remover](https://pilio.ai/background-remover)
 - [Image upscaler](https://pilio.ai/image-upscaler)

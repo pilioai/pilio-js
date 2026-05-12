@@ -43,10 +43,6 @@ try {
       args: ["gpt-image-2", "--input", files.reference, "--prompt", "Make the image cleaner"],
     },
     {
-      name: "nano-banana-2",
-      args: ["nano-banana-2", "--prompt", "A tiny yellow square icon on white background", "--aspect-ratio", "1:1", "--resolution", "1K"],
-    },
-    {
       name: "remove-image-watermark",
       args: ["remove-image-watermark", "--input", files.watermark],
     },
