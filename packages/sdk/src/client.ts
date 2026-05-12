@@ -178,7 +178,7 @@ export class PilioClient {
       return await this.post<TaskCreateResult>("/v1/images/nano-banana-2", input);
     } catch (error) {
       if (error instanceof PilioAPIError && error.status === 404) {
-        throw new PilioAPIError("Nano Banana 2 is not supported by the current Pilio API deployment.", {
+        throw new PilioAPIError("Nano Banana 2 is not available on the current Pilio public developer API endpoint.", {
           code: error.code,
           status: error.status,
           data: error.data,
