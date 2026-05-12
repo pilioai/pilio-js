@@ -42,18 +42,6 @@ describe("PilioClient", () => {
     );
   });
 
-  it("explains when the Nano Banana 2 developer endpoint is not available", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(new Response("404 page not found", { status: 404, headers: { "content-type": "text/plain" } }));
-    const client = new PilioClient({ apiKey: "pilio_sk_test", baseURL: "https://example.test", fetch: fetchMock });
-
-    await expect(client.images.nanoBanana2.create({ prompt: "hello", aspect_ratio: "1:1", resolution: "1K" })).rejects.toMatchObject({
-      name: "PilioAPIError",
-      code: 404,
-      status: 404,
-      message: "Nano Banana 2 is not available on the current Pilio public developer API endpoint.",
-    } satisfies Partial<PilioAPIError>);
-  });
-
   it("falls back to the legacy GPT Image 2 generation endpoint when the unified endpoint is not deployed", async () => {
     const fetchMock = vi
       .fn()

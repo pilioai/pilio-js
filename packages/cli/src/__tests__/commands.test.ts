@@ -38,18 +38,14 @@ describe("CLI command runner", () => {
     expect(output).toHaveBeenCalledWith(expect.stringContaining("task_2"));
   });
 
-  it("delegates Nano Banana 2 creation to the unified SDK method", async () => {
-    const create = vi.fn().mockResolvedValue({ task_id: "task_nb_1", status: "Pending" });
+  it("does not expose Nano Banana 2 until the production developer API supports it", async () => {
     const output = vi.fn();
-    const runner = createCommandRunner({
-      client: { images: { nanoBanana2: { create } } } as never,
-      output,
-    });
+    const runner = createCommandRunner({ client: {} as never, output });
 
-    await runner(["nano-banana-2", "--prompt", "hello", "--aspect-ratio", "1:1", "--resolution", "1K"]);
+    await runner(["--help"]);
+    expect(output).not.toHaveBeenCalledWith(expect.stringContaining("nano-banana-2"));
 
-    expect(create).toHaveBeenCalledWith({ prompt: "hello", aspect_ratio: "1:1", resolution: "1K" });
-    expect(output).toHaveBeenCalledWith(expect.stringContaining("task_nb_1"));
+    await expect(runner(["nano-banana-2", "--prompt", "hello"])).rejects.toThrow("Unknown command: nano-banana-2");
   });
 
   it("uploads an input file before remove-background", async () => {

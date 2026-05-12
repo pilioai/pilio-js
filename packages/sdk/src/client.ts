@@ -74,7 +74,7 @@ export class PilioClient {
       create: (input: GPTImage2Request) => this.createGPTImage2(input),
     },
     nanoBanana2: {
-      create: (input: NanoBanana2Request) => this.createNanoBanana2(input),
+      create: (input: NanoBanana2Request) => this.post<TaskCreateResult>("/v1/images/nano-banana-2", input),
     },
     removeWatermark: (input: RemoveImageWatermarkRequest) =>
       this.post<TaskCreateResult>("/v1/images/remove-watermark", input),
@@ -170,21 +170,6 @@ export class PilioClient {
           ? "/v1/images/gpt-image-2/edits"
           : "/v1/images/gpt-image-2/generations";
       return this.post<TaskCreateResult>(legacyPath, input);
-    }
-  }
-
-  private async createNanoBanana2(input: NanoBanana2Request): Promise<TaskCreateResult> {
-    try {
-      return await this.post<TaskCreateResult>("/v1/images/nano-banana-2", input);
-    } catch (error) {
-      if (error instanceof PilioAPIError && error.status === 404) {
-        throw new PilioAPIError("Nano Banana 2 is not available on the current Pilio public developer API endpoint.", {
-          code: error.code,
-          status: error.status,
-          data: error.data,
-        });
-      }
-      throw error;
     }
   }
 
