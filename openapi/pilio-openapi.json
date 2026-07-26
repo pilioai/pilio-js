@@ -3,7 +3,7 @@
   "info": {
     "title": "Pilio Public API",
     "version": "1.0.0",
-    "description": "Public API for Pilio GPT Image 2, Nano Banana 2, image watermark removal, background removal, image upscale, and PDF watermark removal tasks. API tasks reuse the normal Pilio credit balance and consume 3x the web base credit cost by default; large customer accounts may have a custom multiplier. This specification is optimized for AI coding agents: create files first, upload to presigned URLs, create tasks with file IDs, poll status, then download result URLs."
+    "description": "Public API for Pilio GPT Image 2, Nano Banana 2, Nano Banana Pro, image watermark removal, background removal, image upscale, and PDF watermark removal tasks. API tasks reuse the normal Pilio credit balance and consume 3x the web base credit cost by default; large customer accounts may have a custom multiplier. This specification is optimized for AI coding agents: create files first, upload to presigned URLs, create tasks with file IDs, poll status, then download result URLs."
   },
   "servers": [
     {
@@ -30,7 +30,7 @@
           "GPT Image 2"
         ],
         "summary": "Create a GPT Image 2 image task",
-        "description": "Creates an asynchronous GPT Image 2 task. Send only a prompt for text-to-image, or include image_file_ids for reference-image editing or composition.",
+        "description": "Creates an asynchronous GPT Image 2 task. Send only a prompt for text-to-image, or include image_file_ids for reference-image editing or composition. The upstream model does not support a separate resolution tier; aspect_ratio is appended to the prompt to guide the output canvas ratio. Requests containing resolution are rejected with HTTP 400.",
         "operationId": "createGPTImage2",
         "requestBody": {
           "required": true,
@@ -44,8 +44,7 @@
                   "value": {
                     "prompt": "A cinematic product photo of an orange perfume bottle",
                     "aspect_ratio": "3:2",
-                    "output_count": 2,
-                    "quality": "high"
+                    "output_count": 2
                   }
                 },
                 "withReferences": {
@@ -55,8 +54,7 @@
                       "123456789",
                       "123456790"
                     ],
-                    "aspect_ratio": "auto",
-                    "quality": "medium"
+                    "aspect_ratio": "auto"
                   }
                 }
               }
@@ -116,6 +114,65 @@
                     "aspect_ratio": "1:1",
                     "output_count": 1,
                     "resolution": "0.5K"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Task created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskCreateEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/v1/images/nano-banana-pro": {
+      "post": {
+        "tags": [
+          "Nano Banana Pro"
+        ],
+        "summary": "Create a Nano Banana Pro image task",
+        "description": "Creates an asynchronous Nano Banana Pro task. Send only a prompt for text-to-image, or include image_file_ids for reference-image editing or composition.",
+        "operationId": "createNanoBananaPro",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NanoBananaProRequest"
+              },
+              "examples": {
+                "withReferences": {
+                  "value": {
+                    "prompt": "Turn these references into a premium product campaign visual",
+                    "image_file_ids": [
+                      "123456789",
+                      "123456790"
+                    ],
+                    "aspect_ratio": "16:9",
+                    "resolution": "4K"
+                  }
+                },
+                "textToImage": {
+                  "value": {
+                    "prompt": "A premium editorial product poster with precise lighting and high-end finish",
+                    "aspect_ratio": "1:1",
+                    "output_count": 1,
+                    "resolution": "2K"
                   }
                 }
               }
@@ -838,7 +895,7 @@
               "21:9",
               "auto"
             ],
-            "description": "Required when image_file_ids is omitted. Optional when reference images are provided."
+            "description": "Required when image_file_ids is omitted. Optional when reference images are provided. The selected ratio is appended to the prompt because the upstream model does not expose a separate resolution tier."
           },
           "output_count": {
             "type": "integer",
@@ -848,22 +905,15 @@
               4
             ]
           },
-          "resolution": {
-            "type": "string",
-            "enum": [
-              "0.5K",
-              "1K",
-              "2K",
-              "4K"
-            ]
-          },
           "quality": {
             "type": "string",
             "enum": [
+              "auto",
               "low",
               "medium",
               "high"
-            ]
+            ],
+            "description": "Advanced optional tier: auto, low, medium, or high. Defaults to auto. It affects detail, compute effort, and generation time, not resolution."
           },
           "preprocess_mode": {
             "type": "string",
@@ -932,6 +982,73 @@
             "type": "string",
             "enum": [
               "0.5K",
+              "1K",
+              "2K",
+              "4K"
+            ]
+          },
+          "preprocess_mode": {
+            "type": "string",
+            "enum": [
+              "off",
+              "auto"
+            ]
+          }
+        },
+        "x-tags": [
+          "Shared Schemas"
+        ]
+      },
+      "NanoBananaProRequest": {
+        "type": "object",
+        "required": [
+          "prompt"
+        ],
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "maxLength": 32000
+          },
+          "negative_prompt": {
+            "type": "string",
+            "maxLength": 32000
+          },
+          "image_file_ids": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 14,
+            "items": {
+              "type": "string"
+            },
+            "description": "Optional reference image file IDs. Omit for text-to-image; pass 1 to 14 file IDs for reference-image editing or composition. Supported input formats: jpg, jpeg, png, webp."
+          },
+          "aspect_ratio": {
+            "type": "string",
+            "enum": [
+              "1:1",
+              "2:3",
+              "3:2",
+              "3:4",
+              "4:3",
+              "4:5",
+              "5:4",
+              "9:16",
+              "16:9",
+              "21:9"
+            ],
+            "description": "Required when image_file_ids is omitted. Optional when reference images are provided."
+          },
+          "output_count": {
+            "type": "integer",
+            "enum": [
+              1,
+              2,
+              4
+            ]
+          },
+          "resolution": {
+            "type": "string",
+            "enum": [
               "1K",
               "2K",
               "4K"
@@ -1340,6 +1457,14 @@
     {
       "name": "GPT Image 2",
       "description": "GPT Image 2 generation and image edit task creation APIs."
+    },
+    {
+      "name": "Nano Banana 2",
+      "description": "Nano Banana 2 generation and image edit task creation APIs."
+    },
+    {
+      "name": "Nano Banana Pro",
+      "description": "Nano Banana Pro generation and image edit task creation APIs."
     },
     {
       "name": "Image Watermark Removal",

@@ -21,6 +21,7 @@ const HELP = `Usage: pilio <command> [options]
 
 Commands:
   gpt-image-2 --prompt <text> [--input <path>] [--aspect-ratio <ratio>]
+  nano-banana-pro --prompt <text> [--input <path>] [--aspect-ratio <ratio>]
   remove-image-watermark --input <path>
   remove-background --input <path>
   upscale-image --input <path>
@@ -75,6 +76,18 @@ function optionalString(options: Record<string, string | true | string[]>, key: 
   return typeof value === "string" ? value : undefined;
 }
 
+function optionalInteger(options: Record<string, string | true | string[]>, key: string) {
+  const value = optionalString(options, key);
+  if (value === undefined) {
+    return undefined;
+  }
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed)) {
+    throw new Error(`Option --${key} must be an integer`);
+  }
+  return parsed;
+}
+
 function stringList(options: Record<string, string | true | string[]>, key: string) {
   const value = options[key];
   if (Array.isArray(value)) {
@@ -107,7 +120,18 @@ export function createCommandRunner(options: CommandRunnerOptions) {
       if (subcommand) {
         throw new Error("Use unified syntax: pilio gpt-image-2 --prompt <text> [--input <path>]");
       }
-      await createImageTask(options, parsed.options);
+      if (optionalString(parsed.options, "resolution")) {
+        throw new Error("Option --resolution is not supported for gpt-image-2; use --aspect-ratio");
+      }
+      await createImageTask(options, parsed.options, (payload) => options.client.images.gptImage2.create(payload));
+      return;
+    }
+
+    if (command === "nano-banana-pro") {
+      if (subcommand) {
+        throw new Error("Use unified syntax: pilio nano-banana-pro --prompt <text> [--input <path>]");
+      }
+      await createImageTask(options, parsed.options, (payload) => options.client.images.nanoBananaPro.create(payload));
       return;
     }
 
@@ -167,7 +191,11 @@ async function uploadInput(options: CommandRunnerOptions, inputPath: string) {
   });
 }
 
-async function createImageTask(options: CommandRunnerOptions, parsedOptions: Record<string, string | true | string[]>) {
+async function createImageTask(
+  options: CommandRunnerOptions,
+  parsedOptions: Record<string, string | true | string[]>,
+  createTask: (payload: never) => Promise<unknown>,
+) {
   const inputPaths = stringList(parsedOptions, "input");
   const files = await Promise.all(inputPaths.map((inputPath) => uploadInput(options, inputPath)));
   const payload = {
@@ -176,8 +204,9 @@ async function createImageTask(options: CommandRunnerOptions, parsedOptions: Rec
     ...(optionalString(parsedOptions, "aspect-ratio") ? { aspect_ratio: optionalString(parsedOptions, "aspect-ratio") as never } : {}),
     ...(optionalString(parsedOptions, "quality") ? { quality: optionalString(parsedOptions, "quality") as never } : {}),
     ...(optionalString(parsedOptions, "resolution") ? { resolution: optionalString(parsedOptions, "resolution") as never } : {}),
+    ...(optionalInteger(parsedOptions, "output-count") !== undefined ? { output_count: optionalInteger(parsedOptions, "output-count") } : {}),
   };
-  const result = await options.client.images.gptImage2.create(payload as never);
+  const result = await createTask(payload as never);
   const output = options.output ?? console.log;
   printJSON(output, result);
 }

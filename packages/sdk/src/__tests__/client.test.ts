@@ -42,6 +42,21 @@ describe("PilioClient", () => {
     );
   });
 
+  it("creates Nano Banana Pro tasks through the unified image endpoint", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ code: 200, message: "ok", data: { task_id: "task_nb_pro_1", status: "Pending", status_url: "/v1/tasks/task_nb_pro_1/status", result_url: "/v1/tasks/task_nb_pro_1/result" } }));
+    const client = new PilioClient({ apiKey: "pilio_sk_test", baseURL: "https://example.test", fetch: fetchMock });
+
+    await client.images.nanoBananaPro.create({ prompt: "hello", aspect_ratio: "1:1", resolution: "4K", output_count: 2 });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://example.test/v1/images/nano-banana-pro",
+      expect.objectContaining({
+        method: "POST",
+        body: expect.stringContaining('"output_count":2'),
+      }),
+    );
+  });
+
   it("falls back to the legacy GPT Image 2 generation endpoint when the unified endpoint is not deployed", async () => {
     const fetchMock = vi
       .fn()

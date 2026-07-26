@@ -28,6 +28,16 @@ const result = await client.tasks.wait(task.task_id);
 console.log(result);
 ```
 
+Nano Banana Pro uses the same async task flow:
+
+```ts
+const task = await client.images.nanoBananaPro.create({
+  prompt: "A premium editorial product poster with precise lighting",
+  aspect_ratio: "1:1",
+  resolution: "4K",
+});
+```
+
 ## Upload a local file
 
 ```ts

@@ -5,6 +5,7 @@ export type {
   GPTImage2Request,
   ImageUpscaleRequest,
   NanoBanana2Request,
+  NanoBananaProRequest,
   PDFRemoveWatermarkRequest,
   PilioClientOptions,
   RemoveBackgroundRequest,

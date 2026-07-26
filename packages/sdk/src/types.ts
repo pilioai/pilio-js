@@ -8,6 +8,7 @@ export type ResultFile = components["schemas"]["ResultFile"];
 export type FileUploadItem = components["schemas"]["FileUploadItem"];
 export type GPTImage2Request = components["schemas"]["GPTImage2Request"];
 export type NanoBanana2Request = components["schemas"]["NanoBanana2Request"];
+export type NanoBananaProRequest = components["schemas"]["NanoBananaProRequest"];
 
 type OptionalDefaults<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 

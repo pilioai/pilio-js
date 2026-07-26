@@ -5,6 +5,7 @@ import type {
   GPTImage2Request,
   ImageUpscaleRequest,
   NanoBanana2Request,
+  NanoBananaProRequest,
   PDFRemoveWatermarkRequest,
   PilioClientOptions,
   RemoveBackgroundRequest,
@@ -75,6 +76,9 @@ export class PilioClient {
     },
     nanoBanana2: {
       create: (input: NanoBanana2Request) => this.post<TaskCreateResult>("/v1/images/nano-banana-2", input),
+    },
+    nanoBananaPro: {
+      create: (input: NanoBananaProRequest) => this.post<TaskCreateResult>("/v1/images/nano-banana-pro", input),
     },
     removeWatermark: (input: RemoveImageWatermarkRequest) =>
       this.post<TaskCreateResult>("/v1/images/remove-watermark", input),

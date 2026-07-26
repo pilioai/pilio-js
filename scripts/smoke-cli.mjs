@@ -132,6 +132,7 @@ const server = createServer(async (req, res) => {
 
 const taskCreateRoutes = {
   "/v1/images/gpt-image-2": { taskId: "task_gpt_image_2" },
+  "/v1/images/nano-banana-pro": { taskId: "task_nano_banana_pro" },
   "/v1/images/remove-watermark": { taskId: "task_remove_image_watermark" },
   "/v1/images/remove-background": { taskId: "task_remove_background" },
   "/v1/images/upscale": { taskId: "task_upscale_image" },
@@ -144,6 +145,7 @@ const baseURL = currentBaseURL();
 try {
   await expectCLI(["gpt-image-2", "--prompt", "hello", "--aspect-ratio", "1:1"], "task_gpt_image_2");
   await expectCLI(["gpt-image-2", "--input", files.refA, "--input", files.refB, "--prompt", "make it crisp"], "task_gpt_image_2");
+  await expectCLI(["nano-banana-pro", "--input", files.refA, "--prompt", "make it premium", "--resolution", "4K"], "task_nano_banana_pro");
   await expectCLI(["remove-image-watermark", "--input", files.watermarked], "task_remove_image_watermark");
   await expectCLI(["remove-background", "--input", files.portrait], "task_remove_background");
   await expectCLI(["upscale-image", "--input", files.small], "task_upscale_image");
@@ -160,6 +162,12 @@ try {
     assert(Array.isArray(body.image_file_ids), "edit image_file_ids missing");
     assert(body.image_file_ids.length === 2, "edit should upload two reference images");
     assert(body.prompt === "make it crisp", "edit prompt mismatch");
+  });
+  assertTaskBody("/v1/images/nano-banana-pro", (body) => {
+    assert(Array.isArray(body.image_file_ids), "Nano Banana Pro image_file_ids missing");
+    assert(body.image_file_ids.length === 1, "Nano Banana Pro should upload one reference image");
+    assert(body.prompt === "make it premium", "Nano Banana Pro prompt mismatch");
+    assert(body.resolution === "4K", "Nano Banana Pro resolution mismatch");
   });
   assertTaskBody("/v1/images/remove-watermark", (body) => assertHasFileID(body, "remove image watermark"));
   assertTaskBody("/v1/images/remove-background", (body) => assertHasFileID(body, "remove background"));
@@ -203,7 +211,7 @@ function assertAllPilioRequestsAreAuthenticated() {
 }
 
 function assertAllUploadsOmitAPIKey() {
-  assert(observed.uploads.length === 6, `expected 6 presigned uploads, got ${observed.uploads.length}`);
+  assert(observed.uploads.length === 7, `expected 7 presigned uploads, got ${observed.uploads.length}`);
   for (const upload of observed.uploads) {
     assert(upload.bytes > 0, `empty upload body for ${upload.path}`);
     assert(upload.auth === "", `Pilio API key was incorrectly sent to presigned upload URL ${upload.path}`);

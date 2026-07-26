@@ -15,7 +15,7 @@ export interface paths {
         put?: never;
         /**
          * Create a GPT Image 2 image task
-         * @description Creates an asynchronous GPT Image 2 task. Send only a prompt for text-to-image, or include image_file_ids for reference-image editing or composition.
+         * @description Creates an asynchronous GPT Image 2 task. Send only a prompt for text-to-image, or include image_file_ids for reference-image editing or composition. The upstream model does not support a separate resolution tier; aspect_ratio is appended to the prompt to guide the output canvas ratio. Requests containing resolution are rejected with HTTP 400.
          */
         post: operations["createGPTImage2"];
         delete?: never;
@@ -38,6 +38,26 @@ export interface paths {
          * @description Creates an asynchronous Nano Banana 2 task. Send only a prompt for text-to-image, or include image_file_ids for reference-image editing or composition.
          */
         post: operations["createNanoBanana2"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/images/nano-banana-pro": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create a Nano Banana Pro image task
+         * @description Creates an asynchronous Nano Banana Pro task. Send only a prompt for text-to-image, or include image_file_ids for reference-image editing or composition.
+         */
+        post: operations["createNanoBananaPro"];
         delete?: never;
         options?: never;
         head?: never;
@@ -275,16 +295,17 @@ export interface components {
             /** @description Optional reference image file IDs. Omit for text-to-image; pass 1 to 16 file IDs for reference-image editing or composition. Supported input formats: jpg, jpeg, png, webp. */
             image_file_ids?: string[];
             /**
-             * @description Required when image_file_ids is omitted. Optional when reference images are provided.
+             * @description Required when image_file_ids is omitted. Optional when reference images are provided. The selected ratio is appended to the prompt because the upstream model does not expose a separate resolution tier.
              * @enum {string}
              */
             aspect_ratio?: "1:1" | "3:2" | "2:3" | "3:4" | "4:3" | "4:5" | "5:4" | "16:9" | "9:16" | "21:9" | "auto";
             /** @enum {integer} */
             output_count?: 1 | 2 | 4;
-            /** @enum {string} */
-            resolution?: "0.5K" | "1K" | "2K" | "4K";
-            /** @enum {string} */
-            quality?: "low" | "medium" | "high";
+            /**
+             * @description Advanced optional tier: auto, low, medium, or high. Defaults to auto. It affects detail, compute effort, and generation time, not resolution.
+             * @enum {string}
+             */
+            quality?: "auto" | "low" | "medium" | "high";
             /** @enum {string} */
             preprocess_mode?: "off" | "auto";
         };
@@ -302,6 +323,23 @@ export interface components {
             output_count?: 1 | 2 | 4;
             /** @enum {string} */
             resolution?: "0.5K" | "1K" | "2K" | "4K";
+            /** @enum {string} */
+            preprocess_mode?: "off" | "auto";
+        };
+        NanoBananaProRequest: {
+            prompt: string;
+            negative_prompt?: string;
+            /** @description Optional reference image file IDs. Omit for text-to-image; pass 1 to 14 file IDs for reference-image editing or composition. Supported input formats: jpg, jpeg, png, webp. */
+            image_file_ids?: string[];
+            /**
+             * @description Required when image_file_ids is omitted. Optional when reference images are provided.
+             * @enum {string}
+             */
+            aspect_ratio?: "1:1" | "2:3" | "3:2" | "3:4" | "4:3" | "4:5" | "5:4" | "9:16" | "16:9" | "21:9";
+            /** @enum {integer} */
+            output_count?: 1 | 2 | 4;
+            /** @enum {string} */
+            resolution?: "1K" | "2K" | "4K";
             /** @enum {string} */
             preprocess_mode?: "off" | "auto";
         };
@@ -511,6 +549,32 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["NanoBanana2Request"];
+            };
+        };
+        responses: {
+            /** @description Task created */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskCreateEnvelope"];
+                };
+            };
+            400: components["responses"]["ErrorResponse"];
+            401: components["responses"]["ErrorResponse"];
+        };
+    };
+    createNanoBananaPro: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NanoBananaProRequest"];
             };
         };
         responses: {
