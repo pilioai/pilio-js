@@ -26,8 +26,6 @@ jobs:
       - name: Set up pnpm
         uses: pnpm/action-setup@v4
         with:
-          # pnpm 10.34+ supports npm Trusted Publishing through OIDC.
-          version: 10.34.0
           run_install: false
 
       - name: Set up Node.js
