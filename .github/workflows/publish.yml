@@ -1,0 +1,101 @@
+name: Publish npm packages
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+concurrency:
+  group: npm-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Verify and publish
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          # pnpm 10.34+ supports npm Trusted Publishing through OIDC.
+          version: 10.34.0
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Audit dependencies
+        run: pnpm audit --audit-level moderate
+
+      - name: Lint OpenAPI
+        run: pnpm lint:openapi
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+      - name: Smoke test CLI
+        run: pnpm smoke:cli
+
+      - name: Read package versions
+        id: versions
+        shell: bash
+        run: |
+          echo "sdk=$(node -p "require('./packages/sdk/package.json').version")" >> "$GITHUB_OUTPUT"
+          echo "cli=$(node -p "require('./packages/cli/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Publish SDK
+        working-directory: packages/sdk
+        shell: bash
+        run: |
+          if pnpm view "@pilio/sdk@${{ steps.versions.outputs.sdk }}" version >/dev/null 2>&1; then
+            echo "@pilio/sdk@${{ steps.versions.outputs.sdk }} is already published"
+          else
+            pnpm publish --access public --no-git-checks
+          fi
+
+      - name: Publish CLI
+        working-directory: packages/cli
+        shell: bash
+        run: |
+          if pnpm view "@pilio/cli@${{ steps.versions.outputs.cli }}" version >/dev/null 2>&1; then
+            echo "@pilio/cli@${{ steps.versions.outputs.cli }} is already published"
+          else
+            pnpm publish --access public --no-git-checks
+          fi
+
+      - name: Verify registry versions
+        shell: bash
+        run: |
+          for attempt in {1..6}; do
+            sdk="$(pnpm view @pilio/sdk version 2>/dev/null || true)"
+            cli="$(pnpm view @pilio/cli version 2>/dev/null || true)"
+            if [[ "$sdk" == "${{ steps.versions.outputs.sdk }}" && "$cli" == "${{ steps.versions.outputs.cli }}" ]]; then
+              echo "Verified @pilio/sdk@$sdk and @pilio/cli@$cli"
+              exit 0
+            fi
+            echo "Registry not updated yet (attempt $attempt/6): sdk=$sdk cli=$cli"
+            sleep 10
+          done
+          exit 1
