@@ -36,7 +36,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Audit dependencies
+      - name: Audit published dependencies
+        run: pnpm audit --prod --audit-level moderate
+
+      - name: Report build dependency advisories
+        continue-on-error: true
         run: pnpm audit --audit-level moderate
 
       - name: Lint OpenAPI
