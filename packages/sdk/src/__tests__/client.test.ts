@@ -43,21 +43,6 @@ describe("PilioClient", () => {
     );
   });
 
-  it("creates Nano Banana Pro tasks through the unified image endpoint", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ code: 200, message: "ok", data: { task_id: "task_nb_pro_1", status: "Pending", status_url: "/v1/tasks/task_nb_pro_1/status", result_url: "/v1/tasks/task_nb_pro_1/result" } }));
-    const client = new PilioClient({ apiKey: "pilio_sk_test", baseURL: "https://example.test", fetch: fetchMock });
-
-    await client.images.nanoBananaPro.create({ prompt: "hello", aspect_ratio: "1:1", resolution: "4K", output_count: 2 });
-
-    expect(fetchMock).toHaveBeenCalledWith(
-      "https://example.test/v1/images/nano-banana-pro",
-      expect.objectContaining({
-        method: "POST",
-        body: expect.stringContaining('"output_count":2'),
-      }),
-    );
-  });
-
   it("falls back to the legacy GPT Image 2 generation endpoint when the unified endpoint is not deployed", async () => {
     const fetchMock = vi
       .fn()
@@ -140,7 +125,8 @@ describe("PilioClient", () => {
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(jsonResponse({ code: 200, message: "ok", data: { total: 1, items: [{ id: "file_1", upload_url: "https://upload.test/file_1", name: "input.png", type: "png" }] } }))
-      .mockResolvedValueOnce(new Response(null, { status: 200 }));
+      .mockResolvedValueOnce(new Response(null, { status: 200 }))
+      .mockResolvedValueOnce(jsonResponse({ code: 200, message: "ok", data: null }));
     const client = new PilioClient({ apiKey: "pilio_sk_test", baseURL: "https://example.test", fetch: fetchMock });
 
     const file = await client.files.upload({
@@ -160,6 +146,18 @@ describe("PilioClient", () => {
         headers: expect.not.objectContaining({
           authorization: expect.any(String),
         }),
+      }),
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      3,
+      "https://example.test/v1/files/file_1/complete",
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({
+          authorization: "Bearer pilio_sk_test",
+          "content-type": "application/json",
+        }),
+        body: expect.stringMatching(/"upload_mode":"single".*"duration_ms":\d+.*"size":3/),
       }),
     );
   });

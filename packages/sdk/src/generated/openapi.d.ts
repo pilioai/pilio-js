@@ -44,26 +44,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/images/nano-banana-pro": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Create a Nano Banana Pro image task
-         * @description Creates an asynchronous Nano Banana Pro task. Send only a prompt for text-to-image, or include image_file_ids for reference-image editing or composition.
-         */
-        post: operations["createNanoBananaPro"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/v1/images/remove-watermark": {
         parameters: {
             query?: never;
@@ -195,7 +175,7 @@ export interface paths {
         put?: never;
         /**
          * Create upload file records
-         * @description Creates file records and returns presigned PUT URLs. Use upload_url for a single upload without calling complete. Use upload_urls for multipart upload followed by /v1/files/{id}/complete. Do not send the Pilio API Key to presigned upload URLs. Use returned items[].id as image_file_id, image_file_ids, or pdf_file_id when creating tasks.
+         * @description Creates file records and returns presigned PUT URLs. Use upload_url for a single upload followed by /v1/files/{id}/complete with upload_mode=single. Use upload_urls for multipart upload followed by /v1/files/{id}/complete with upload_mode=multipart and parts. Do not send the Pilio API Key to presigned upload URLs. Use returned items[].id as image_file_id, image_file_ids, or pdf_file_id when creating tasks.
          */
         post: operations["createFiles"];
         delete?: never;
@@ -214,10 +194,10 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Complete multipart upload
-         * @description Completes a multipart upload after all upload_urls have been PUT successfully and their ETag headers have been collected. This endpoint is only needed when batch-create returns upload_urls; single upload_url uploads do not need it.
+         * Confirm file upload completion
+         * @description Confirms a file upload after all presigned PUT requests succeed. Single upload_url and multipart upload_urls flows both call this endpoint; multipart requests also merge object storage parts.
          */
-        post: operations["completeMultipartUpload"];
+        post: operations["completeFileUpload"];
         delete?: never;
         options?: never;
         head?: never;
@@ -328,23 +308,6 @@ export interface components {
             output_count?: 1 | 2 | 4;
             /** @enum {string} */
             resolution?: "0.5K" | "1K" | "2K" | "4K";
-            /** @enum {string} */
-            preprocess_mode?: "off" | "auto";
-        };
-        NanoBananaProRequest: {
-            prompt: string;
-            negative_prompt?: string;
-            /** @description Optional reference image file IDs. Omit for text-to-image; pass 1 to 14 file IDs for reference-image editing or composition. Supported input formats: jpg, jpeg, png, webp. */
-            image_file_ids?: string[];
-            /**
-             * @description Required when image_file_ids is omitted. Optional when reference images are provided.
-             * @enum {string}
-             */
-            aspect_ratio?: "1:1" | "2:3" | "3:2" | "3:4" | "4:3" | "4:5" | "5:4" | "9:16" | "16:9" | "21:9";
-            /** @enum {integer} */
-            output_count?: 1 | 2 | 4;
-            /** @enum {string} */
-            resolution?: "1K" | "2K" | "4K";
             /** @enum {string} */
             preprocess_mode?: "off" | "auto";
         };
@@ -464,9 +427,18 @@ export interface components {
             part_number: number;
             etag: string;
         };
-        CompleteMultipartUploadRequest: {
-            /** @description Multipart upload completion data. part_number must start from 1 and remain consecutive. etag comes from each part PUT response header. */
-            parts: components["schemas"]["CompletedPart"][];
+        CompleteFileUploadRequest: {
+            /**
+             * @description Use single for upload_url uploads and multipart for upload_urls uploads.
+             * @enum {string}
+             */
+            upload_mode: "single" | "multipart";
+            /** @description Elapsed upload time in milliseconds, measured from upload start until all presigned PUT requests succeed. */
+            duration_ms: number;
+            /** @description Client-observed file size in bytes. The server prefers the size stored on the file record. */
+            size?: number;
+            /** @description Multipart upload completion data. Required when upload_mode is multipart. part_number must start from 1 and remain consecutive. etag comes from each part PUT response header. */
+            parts?: components["schemas"]["CompletedPart"][];
         };
         /**
          * @description Common business errors surfaced by the public API.
@@ -554,32 +526,6 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["NanoBanana2Request"];
-            };
-        };
-        responses: {
-            /** @description Task created */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TaskCreateEnvelope"];
-                };
-            };
-            400: components["responses"]["ErrorResponse"];
-            401: components["responses"]["ErrorResponse"];
-        };
-    };
-    createNanoBananaPro: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["NanoBananaProRequest"];
             };
         };
         responses: {
@@ -776,7 +722,7 @@ export interface operations {
             401: components["responses"]["ErrorResponse"];
         };
     };
-    completeMultipartUpload: {
+    completeFileUpload: {
         parameters: {
             query?: never;
             header?: never;
@@ -788,11 +734,11 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CompleteMultipartUploadRequest"];
+                "application/json": components["schemas"]["CompleteFileUploadRequest"];
             };
         };
         responses: {
-            /** @description Multipart upload completed */
+            /** @description Upload completion confirmed */
             200: {
                 headers: {
                     [name: string]: unknown;

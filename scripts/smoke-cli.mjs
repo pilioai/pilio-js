@@ -25,6 +25,7 @@ for (const [index, filePath] of Object.values(files).entries()) {
 
 const observed = {
   fileCreates: [],
+  fileCompletes: [],
   uploads: [],
   taskCreates: [],
   taskStatuses: [],
@@ -70,6 +71,17 @@ const server = createServer(async (req, res) => {
       });
       res.statusCode = body.length > 0 ? 200 : 400;
       res.end();
+      return;
+    }
+
+    const completeMatch = url.pathname.match(/^\/v1\/files\/([^/]+)\/complete$/);
+    if (req.method === "POST" && completeMatch) {
+      observed.fileCompletes.push({
+        auth: req.headers.authorization ?? "",
+        fileId: completeMatch[1],
+        payload: JSON.parse(body.toString("utf8")),
+      });
+      json(res, { code: 200, message: "ok", data: null });
       return;
     }
 
@@ -132,7 +144,7 @@ const server = createServer(async (req, res) => {
 
 const taskCreateRoutes = {
   "/v1/images/gpt-image-2": { taskId: "task_gpt_image_2" },
-  "/v1/images/nano-banana-pro": { taskId: "task_nano_banana_pro" },
+  "/v1/images/nano-banana-2": { taskId: "task_nano_banana_2" },
   "/v1/images/remove-watermark": { taskId: "task_remove_image_watermark" },
   "/v1/images/remove-background": { taskId: "task_remove_background" },
   "/v1/images/upscale": { taskId: "task_upscale_image" },
@@ -145,7 +157,7 @@ const baseURL = currentBaseURL();
 try {
   await expectCLI(["gpt-image-2", "--prompt", "hello", "--aspect-ratio", "auto", "--resolution", "2K"], "task_gpt_image_2");
   await expectCLI(["gpt-image-2", "--input", files.refA, "--input", files.refB, "--prompt", "make it crisp"], "task_gpt_image_2");
-  await expectCLI(["nano-banana-pro", "--input", files.refA, "--prompt", "make it premium", "--resolution", "4K"], "task_nano_banana_pro");
+  await expectCLI(["nano-banana-2", "--input", files.refA, "--prompt", "make it clean", "--resolution", "2K"], "task_nano_banana_2");
   await expectCLI(["remove-image-watermark", "--input", files.watermarked], "task_remove_image_watermark");
   await expectCLI(["remove-background", "--input", files.portrait], "task_remove_background");
   await expectCLI(["upscale-image", "--input", files.small], "task_upscale_image");
@@ -164,11 +176,11 @@ try {
     assert(body.image_file_ids.length === 2, "edit should upload two reference images");
     assert(body.prompt === "make it crisp", "edit prompt mismatch");
   });
-  assertTaskBody("/v1/images/nano-banana-pro", (body) => {
-    assert(Array.isArray(body.image_file_ids), "Nano Banana Pro image_file_ids missing");
-    assert(body.image_file_ids.length === 1, "Nano Banana Pro should upload one reference image");
-    assert(body.prompt === "make it premium", "Nano Banana Pro prompt mismatch");
-    assert(body.resolution === "4K", "Nano Banana Pro resolution mismatch");
+  assertTaskBody("/v1/images/nano-banana-2", (body) => {
+    assert(Array.isArray(body.image_file_ids), "Nano Banana 2 image_file_ids missing");
+    assert(body.image_file_ids.length === 1, "Nano Banana 2 should upload one reference image");
+    assert(body.prompt === "make it clean", "Nano Banana 2 prompt mismatch");
+    assert(body.resolution === "2K", "Nano Banana 2 resolution mismatch");
   });
   assertTaskBody("/v1/images/remove-watermark", (body) => assertHasFileID(body, "remove image watermark"));
   assertTaskBody("/v1/images/remove-background", (body) => assertHasFileID(body, "remove background"));
@@ -201,6 +213,7 @@ async function expectCLI(args, expectedOutput) {
 function assertAllPilioRequestsAreAuthenticated() {
   const requests = [
     ...observed.fileCreates.map((request) => ({ label: "/v1/files/batch-create", auth: request.auth })),
+    ...observed.fileCompletes.map((request) => ({ label: "/v1/files/:id/complete", auth: request.auth })),
     ...observed.taskCreates.map((request) => ({ label: request.path, auth: request.auth })),
     ...observed.taskStatuses.map((request) => ({ label: "/v1/tasks/:id/status", auth: request.auth })),
     ...observed.taskResults.map((request) => ({ label: "/v1/tasks/:id/result", auth: request.auth })),
@@ -216,6 +229,11 @@ function assertAllUploadsOmitAPIKey() {
   for (const upload of observed.uploads) {
     assert(upload.bytes > 0, `empty upload body for ${upload.path}`);
     assert(upload.auth === "", `Pilio API key was incorrectly sent to presigned upload URL ${upload.path}`);
+  }
+  assert(observed.fileCompletes.length === observed.uploads.length, "each presigned upload should be confirmed exactly once");
+  for (const completion of observed.fileCompletes) {
+    assert(completion.payload.upload_mode === "single", `unexpected upload mode for ${completion.fileId}`);
+    assert(completion.payload.duration_ms >= 1, `missing upload duration for ${completion.fileId}`);
   }
 }
 

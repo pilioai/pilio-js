@@ -21,7 +21,7 @@ const HELP = `Usage: pilio <command> [options]
 
 Commands:
   gpt-image-2 --prompt <text> [--input <path>] [--aspect-ratio <ratio>] [--resolution <1K|2K|4K>]
-  nano-banana-pro --prompt <text> [--input <path>] [--aspect-ratio <ratio>]
+  nano-banana-2 --prompt <text> [--input <path>] [--aspect-ratio <ratio>] [--resolution <0.5K|1K|2K|4K>]
   remove-image-watermark --input <path>
   remove-background --input <path>
   upscale-image --input <path>
@@ -151,11 +151,13 @@ export function createCommandRunner(options: CommandRunnerOptions) {
       return;
     }
 
-    if (command === "nano-banana-pro") {
+    if (command === "nano-banana-2") {
       if (subcommand) {
-        throw new Error("Use unified syntax: pilio nano-banana-pro --prompt <text> [--input <path>]");
+        throw new Error(
+          "Use unified syntax: pilio nano-banana-2 --prompt <text> [--input <path>] [--aspect-ratio <ratio>] [--resolution <0.5K|1K|2K|4K>]",
+        );
       }
-      await createImageTask(options, parsed.options, (payload) => options.client.images.nanoBananaPro.create(payload));
+      await createImageTask(options, parsed.options, (payload) => options.client.images.nanoBanana2.create(payload));
       return;
     }
 

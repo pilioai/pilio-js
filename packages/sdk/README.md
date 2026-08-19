@@ -29,13 +29,13 @@ const result = await client.tasks.wait(task.task_id);
 console.log(result);
 ```
 
-Nano Banana Pro uses the same async task flow:
+Nano Banana 2 uses the same async task flow:
 
 ```ts
-const task = await client.images.nanoBananaPro.create({
-  prompt: "A premium editorial product poster with precise lighting",
+const task = await client.images.nanoBanana2.create({
+  prompt: "A clean editorial product poster with precise lighting",
   aspect_ratio: "1:1",
-  resolution: "4K",
+  resolution: "2K",
 });
 ```
 
@@ -64,6 +64,8 @@ const task = await client.images.removeBackground({
 const result = await client.tasks.wait(task.task_id);
 console.log(result.files);
 ```
+
+`client.files.upload()` performs the presigned PUT and then confirms the upload through `/v1/files/{id}/complete`. The API key is sent only to Pilio endpoints, never to the presigned upload URL.
 
 Keep API keys in environment variables or a secure secret store. Do not commit real credentials.
 

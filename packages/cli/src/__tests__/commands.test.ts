@@ -108,43 +108,44 @@ describe("CLI command runner", () => {
     expect(output).toHaveBeenCalledWith(expect.stringContaining("task_2"));
   });
 
-  it("delegates Nano Banana Pro creation to the unified SDK method", async () => {
-    const create = vi.fn().mockResolvedValue({ task_id: "task_nb_pro_1", status: "Pending" });
+  it("delegates Nano Banana 2 creation to the public SDK method", async () => {
+    const create = vi.fn().mockResolvedValue({ task_id: "task_nb_1", status: "Pending" });
     const output = vi.fn();
     const runner = createCommandRunner({
-      client: { images: { nanoBananaPro: { create } } } as never,
+      client: { images: { nanoBanana2: { create } } } as never,
       output,
     });
 
     await runner(["--help"]);
-    expect(output).toHaveBeenCalledWith(expect.stringContaining("nano-banana-pro"));
+    expect(output).toHaveBeenCalledWith(expect.stringContaining("nano-banana-2"));
+    expect(output).not.toHaveBeenCalledWith(expect.stringContaining("nano-banana-pro"));
 
-    await runner(["nano-banana-pro", "--prompt", "hello", "--aspect-ratio", "1:1", "--resolution", "4K", "--output-count", "2"]);
+    await runner(["nano-banana-2", "--prompt", "hello", "--aspect-ratio", "1:1", "--resolution", "4K", "--output-count", "2"]);
 
     expect(create).toHaveBeenCalledWith({ prompt: "hello", aspect_ratio: "1:1", resolution: "4K", output_count: 2 });
-    expect(output).toHaveBeenCalledWith(expect.stringContaining("task_nb_pro_1"));
+    expect(output).toHaveBeenCalledWith(expect.stringContaining("task_nb_1"));
   });
 
-  it("uploads reference images before Nano Banana Pro creation", async () => {
+  it("uploads reference images before Nano Banana 2 creation", async () => {
     const upload = vi.fn().mockResolvedValue({ id: "file_1" });
-    const create = vi.fn().mockResolvedValue({ task_id: "task_nb_pro_2", status: "Pending" });
+    const create = vi.fn().mockResolvedValue({ task_id: "task_nb_2", status: "Pending" });
     const readFile = vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3]));
     const stat = vi.fn().mockResolvedValue({ size: 3 });
     const output = vi.fn();
     const runner = createCommandRunner({
       client: {
         files: { upload },
-        images: { nanoBananaPro: { create } },
+        images: { nanoBanana2: { create } },
       } as never,
       fs: { readFile, stat },
       output,
     });
 
-    await runner(["nano-banana-pro", "--input", "reference.png", "--prompt", "make it premium"]);
+    await runner(["nano-banana-2", "--input", "reference.png", "--prompt", "make it clean"]);
 
     expect(upload).toHaveBeenCalledWith(expect.objectContaining({ name: "reference.png", type: "png", size: 3 }));
-    expect(create).toHaveBeenCalledWith({ prompt: "make it premium", image_file_ids: ["file_1"] });
-    expect(output).toHaveBeenCalledWith(expect.stringContaining("task_nb_pro_2"));
+    expect(create).toHaveBeenCalledWith({ prompt: "make it clean", image_file_ids: ["file_1"] });
+    expect(output).toHaveBeenCalledWith(expect.stringContaining("task_nb_2"));
   });
 
   it("uploads an input file before remove-background", async () => {

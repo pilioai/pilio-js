@@ -38,7 +38,7 @@ Common commands:
 
 ```bash
 pilio gpt-image-2 --prompt <text> [--input <path>] [--aspect-ratio <ratio>] [--resolution <1K|2K|4K>]
-pilio nano-banana-pro --prompt <text> [--input <path>] [--aspect-ratio <ratio>]
+pilio nano-banana-2 --prompt <text> [--input <path>] [--aspect-ratio <ratio>] [--resolution <0.5K|1K|2K|4K>]
 pilio remove-image-watermark --input <path>
 pilio remove-background --input <path>
 pilio upscale-image --input <path>
@@ -57,7 +57,7 @@ Keep API keys in environment variables or a secure secret store. Do not commit r
 Use the hosted tools to test inputs and outputs in a browser before running the same workflow through the CLI:
 
 - `pilio gpt-image-2`: [GPT Image 2](https://pilio.ai/)
-- `pilio nano-banana-pro`: [Nano Banana Pro](https://pilio.ai/nano-banana-pro)
+- `pilio nano-banana-2`: [Nano Banana 2](https://pilio.ai/nano-banana-2)
 - `pilio remove-image-watermark`: [Image watermark remover](https://pilio.ai/image-watermark-remover)
 - `pilio remove-background`: [Background remover](https://pilio.ai/background-remover)
 - `pilio upscale-image`: [Image upscaler](https://pilio.ai/image-upscaler)

@@ -5,7 +5,6 @@ import type {
   GPTImage2Request,
   ImageUpscaleRequest,
   NanoBanana2Request,
-  NanoBananaProRequest,
   PDFRemoveWatermarkRequest,
   PilioClientOptions,
   RemoveBackgroundRequest,
@@ -77,9 +76,6 @@ export class PilioClient {
     nanoBanana2: {
       create: (input: NanoBanana2Request) => this.post<TaskCreateResult>("/v1/images/nano-banana-2", input),
     },
-    nanoBananaPro: {
-      create: (input: NanoBananaProRequest) => this.post<TaskCreateResult>("/v1/images/nano-banana-pro", input),
-    },
     removeWatermark: (input: RemoveImageWatermarkRequest) =>
       this.post<TaskCreateResult>("/v1/images/remove-watermark", input),
     removeBackground: (input: RemoveBackgroundRequest) => this.post<TaskCreateResult>("/v1/images/remove-background", input),
@@ -140,6 +136,7 @@ export class PilioClient {
         });
       }
 
+      const uploadStartedAt = Date.now();
       const response = await this.fetchImpl(item.upload_url, {
         method: "PUT",
         body: file.data,
@@ -148,6 +145,13 @@ export class PilioClient {
       if (!response.ok) {
         throw new PilioUploadError(`Pilio presigned upload failed with HTTP ${response.status}`, response.status);
       }
+
+      const durationMs = Math.max(1, Date.now() - uploadStartedAt);
+      await this.postVoid(`/v1/files/${encodeURIComponent(String(item.id))}/complete`, {
+        upload_mode: "single",
+        duration_ms: durationMs,
+        ...(file.size !== undefined ? { size: file.size } : {}),
+      });
 
       return item;
     },
@@ -159,6 +163,10 @@ export class PilioClient {
 
   private async post<T>(path: string, body: unknown): Promise<T> {
     return this.request<T>("POST", path, body);
+  }
+
+  private async postVoid(path: string, body: unknown): Promise<void> {
+    await this.requestEnvelope("POST", path, body);
   }
 
   private async createGPTImage2(input: GPTImage2Request): Promise<TaskCreateResult> {
@@ -178,6 +186,11 @@ export class PilioClient {
   }
 
   private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
+    const envelope = await this.requestEnvelope<T>(method, path, body);
+    return requireData(envelope, path);
+  }
+
+  private async requestEnvelope<T>(method: string, path: string, body?: unknown): Promise<ResponseEnvelope<T>> {
     const headers: Record<string, string> = {
       authorization: `Bearer ${this.apiKey}`,
     };
@@ -209,6 +222,6 @@ export class PilioClient {
       });
     }
 
-    return requireData(envelope, path);
+    return envelope;
   }
 }
