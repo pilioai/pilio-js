@@ -20,7 +20,7 @@ type ParsedArgs = {
 const HELP = `Usage: pilio <command> [options]
 
 Commands:
-  gpt-image-2 --prompt <text> [--input <path>] [--aspect-ratio <ratio>]
+  gpt-image-2 --prompt <text> [--input <path>] [--aspect-ratio <ratio>] [--resolution <1K|2K|4K>]
   nano-banana-pro --prompt <text> [--input <path>] [--aspect-ratio <ratio>]
   remove-image-watermark --input <path>
   remove-background --input <path>
@@ -28,6 +28,10 @@ Commands:
   remove-pdf-watermark --input <path>
   task wait <task_id>
 `;
+
+const GPT_IMAGE_2_ASPECT_RATIOS = new Set(["1:1", "3:2", "2:3", "3:4", "4:3", "4:5", "5:4", "7:4", "16:9", "9:16", "21:9", "auto"]);
+const GPT_IMAGE_2_RESOLUTIONS = new Set(["1K", "2K", "4K"]);
+const GPT_IMAGE_2_HIGH_RES_UNSUPPORTED_ASPECT_RATIOS = new Set(["4:5", "5:4", "7:4"]);
 
 function parseArgs(args: string[]): ParsedArgs {
   const positionals: string[] = [];
@@ -104,6 +108,26 @@ function printJSON(output: (message: string) => void, value: unknown) {
   output(JSON.stringify(value, null, 2));
 }
 
+function validateGPTImage2Options(options: Record<string, string | true | string[]>) {
+  const aspectRatio = optionalString(options, "aspect-ratio");
+  const resolution = optionalString(options, "resolution");
+
+  if (aspectRatio && !GPT_IMAGE_2_ASPECT_RATIOS.has(aspectRatio)) {
+    throw new Error(`Option --aspect-ratio must be one of: ${[...GPT_IMAGE_2_ASPECT_RATIOS].join(", ")}`);
+  }
+  if (resolution && !GPT_IMAGE_2_RESOLUTIONS.has(resolution)) {
+    throw new Error(`Option --resolution must be one of: ${[...GPT_IMAGE_2_RESOLUTIONS].join(", ")}`);
+  }
+  if (
+    resolution &&
+    resolution !== "1K" &&
+    aspectRatio &&
+    GPT_IMAGE_2_HIGH_RES_UNSUPPORTED_ASPECT_RATIOS.has(aspectRatio)
+  ) {
+    throw new Error(`GPT Image 2 ${resolution} does not support aspect ratio ${aspectRatio}`);
+  }
+}
+
 export function createCommandRunner(options: CommandRunnerOptions) {
   const output = options.output ?? console.log;
 
@@ -118,11 +142,11 @@ export function createCommandRunner(options: CommandRunnerOptions) {
 
     if (command === "gpt-image-2") {
       if (subcommand) {
-        throw new Error("Use unified syntax: pilio gpt-image-2 --prompt <text> [--input <path>]");
+        throw new Error(
+          "Use unified syntax: pilio gpt-image-2 --prompt <text> [--input <path>] [--aspect-ratio <ratio>] [--resolution <1K|2K|4K>]",
+        );
       }
-      if (optionalString(parsed.options, "resolution")) {
-        throw new Error("Option --resolution is not supported for gpt-image-2; use --aspect-ratio");
-      }
+      validateGPTImage2Options(parsed.options);
       await createImageTask(options, parsed.options, (payload) => options.client.images.gptImage2.create(payload));
       return;
     }

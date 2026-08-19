@@ -15,7 +15,7 @@ export interface paths {
         put?: never;
         /**
          * Create a GPT Image 2 image task
-         * @description Creates an asynchronous GPT Image 2 task. Send only a prompt for text-to-image, or include image_file_ids for reference-image editing or composition. The upstream model does not support a separate resolution tier; aspect_ratio is appended to the prompt to guide the output canvas ratio. Requests containing resolution are rejected with HTTP 400.
+         * @description Creates an asynchronous GPT Image 2 task. Send only a prompt for text-to-image, or include image_file_ids for reference-image editing or composition. aspect_ratio and resolution are independent parameters: auto is passed through unchanged, omitted/1K requests use AI Gateway, and 2K/4K requests use the existing KIE channel.
          */
         post: operations["createGPTImage2"];
         delete?: never;
@@ -295,10 +295,15 @@ export interface components {
             /** @description Optional reference image file IDs. Omit for text-to-image; pass 1 to 16 file IDs for reference-image editing or composition. Supported input formats: jpg, jpeg, png, webp. */
             image_file_ids?: string[];
             /**
-             * @description Required when image_file_ids is omitted. Optional when reference images are provided. The selected ratio is appended to the prompt because the upstream model does not expose a separate resolution tier.
+             * @description Required when image_file_ids is omitted. Optional when reference images are provided. auto is passed through unchanged. 2K/4K do not support 4:5, 5:4, or 7:4.
              * @enum {string}
              */
-            aspect_ratio?: "1:1" | "3:2" | "2:3" | "3:4" | "4:3" | "4:5" | "5:4" | "16:9" | "9:16" | "21:9" | "auto";
+            aspect_ratio?: "1:1" | "3:2" | "2:3" | "3:4" | "4:3" | "4:5" | "5:4" | "7:4" | "16:9" | "9:16" | "21:9" | "auto";
+            /**
+             * @description Optional output resolution tier. Omitted/1K requests use AI Gateway; 2K/4K requests use the existing KIE channel.
+             * @enum {string}
+             */
+            resolution?: "1K" | "2K" | "4K";
             /** @enum {integer} */
             output_count?: 1 | 2 | 4;
             /**

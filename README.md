@@ -39,7 +39,7 @@ Keep API keys in environment variables or a secure secret store. Do not commit r
 ## CLI example
 
 ```bash
-pilio gpt-image-2 --prompt "A cinematic product photo" --aspect-ratio 3:2
+pilio gpt-image-2 --prompt "A cinematic product photo" --aspect-ratio auto --resolution 2K
 pilio nano-banana-pro --prompt "A premium editorial product poster" --resolution 4K
 pilio task wait <task_id>
 ```

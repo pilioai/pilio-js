@@ -21,7 +21,8 @@ const client = new PilioClient({
 
 const task = await client.images.gptImage2.create({
   prompt: "A cinematic product photo of an orange perfume bottle",
-  aspect_ratio: "3:2",
+  aspect_ratio: "auto",
+  resolution: "2K",
 });
 
 const result = await client.tasks.wait(task.task_id);

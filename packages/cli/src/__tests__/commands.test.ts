@@ -16,7 +16,21 @@ describe("CLI command runner", () => {
     expect(output).toHaveBeenCalledWith(expect.stringContaining("task_1"));
   });
 
-  it("rejects unsupported GPT Image 2 resolution before creating a task", async () => {
+  it("preserves auto aspect ratio when creating a high-resolution GPT Image 2 task", async () => {
+    const create = vi.fn().mockResolvedValue({ task_id: "task_high_res", status: "Pending" });
+    const output = vi.fn();
+    const runner = createCommandRunner({
+      client: { images: { gptImage2: { create } } } as never,
+      output,
+    });
+
+    await runner(["gpt-image-2", "--prompt", "hello", "--aspect-ratio", "auto", "--resolution", "2K"]);
+
+    expect(create).toHaveBeenCalledWith({ prompt: "hello", aspect_ratio: "auto", resolution: "2K" });
+    expect(output).toHaveBeenCalledWith(expect.stringContaining("task_high_res"));
+  });
+
+  it("rejects invalid GPT Image 2 resolution before uploading or creating a task", async () => {
     const upload = vi.fn();
     const create = vi.fn().mockResolvedValue({ task_id: "task_ignored", status: "Pending" });
     const output = vi.fn();
@@ -38,9 +52,36 @@ describe("CLI command runner", () => {
         "--aspect-ratio",
         "16:9",
         "--resolution",
+        "8K",
+      ]),
+    ).rejects.toThrow("Option --resolution must be one of: 1K, 2K, 4K");
+    expect(upload).not.toHaveBeenCalled();
+    expect(create).not.toHaveBeenCalled();
+  });
+
+  it("rejects unsupported GPT Image 2 high-resolution aspect ratio combinations before upload", async () => {
+    const upload = vi.fn();
+    const create = vi.fn();
+    const runner = createCommandRunner({
+      client: {
+        files: { upload },
+        images: { gptImage2: { create } },
+      } as never,
+    });
+
+    await expect(
+      runner([
+        "gpt-image-2",
+        "--input",
+        "reference.png",
+        "--prompt",
+        "hello",
+        "--aspect-ratio",
+        "4:5",
+        "--resolution",
         "4K",
       ]),
-    ).rejects.toThrow("Option --resolution is not supported for gpt-image-2; use --aspect-ratio");
+    ).rejects.toThrow("GPT Image 2 4K does not support aspect ratio 4:5");
     expect(upload).not.toHaveBeenCalled();
     expect(create).not.toHaveBeenCalled();
   });

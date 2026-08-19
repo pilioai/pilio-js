@@ -30,7 +30,7 @@
           "GPT Image 2"
         ],
         "summary": "Create a GPT Image 2 image task",
-        "description": "Creates an asynchronous GPT Image 2 task. Send only a prompt for text-to-image, or include image_file_ids for reference-image editing or composition. The upstream model does not support a separate resolution tier; aspect_ratio is appended to the prompt to guide the output canvas ratio. Requests containing resolution are rejected with HTTP 400.",
+        "description": "Creates an asynchronous GPT Image 2 task. Send only a prompt for text-to-image, or include image_file_ids for reference-image editing or composition. aspect_ratio and resolution are independent parameters: auto is passed through unchanged, omitted/1K requests use AI Gateway, and 2K/4K requests use the existing KIE channel.",
         "operationId": "createGPTImage2",
         "requestBody": {
           "required": true,
@@ -44,6 +44,7 @@
                   "value": {
                     "prompt": "A cinematic product photo of an orange perfume bottle",
                     "aspect_ratio": "3:2",
+                    "resolution": "2K",
                     "output_count": 2
                   }
                 },
@@ -890,12 +891,22 @@
               "4:3",
               "4:5",
               "5:4",
+              "7:4",
               "16:9",
               "9:16",
               "21:9",
               "auto"
             ],
-            "description": "Required when image_file_ids is omitted. Optional when reference images are provided. The selected ratio is appended to the prompt because the upstream model does not expose a separate resolution tier."
+            "description": "Required when image_file_ids is omitted. Optional when reference images are provided. auto is passed through unchanged. 2K/4K do not support 4:5, 5:4, or 7:4."
+          },
+          "resolution": {
+            "type": "string",
+            "enum": [
+              "1K",
+              "2K",
+              "4K"
+            ],
+            "description": "Optional output resolution tier. Omitted/1K requests use AI Gateway; 2K/4K requests use the existing KIE channel."
           },
           "output_count": {
             "type": "integer",

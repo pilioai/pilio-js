@@ -143,7 +143,7 @@ await new Promise((resolveListen) => server.listen(0, "127.0.0.1", resolveListen
 const baseURL = currentBaseURL();
 
 try {
-  await expectCLI(["gpt-image-2", "--prompt", "hello", "--aspect-ratio", "1:1"], "task_gpt_image_2");
+  await expectCLI(["gpt-image-2", "--prompt", "hello", "--aspect-ratio", "auto", "--resolution", "2K"], "task_gpt_image_2");
   await expectCLI(["gpt-image-2", "--input", files.refA, "--input", files.refB, "--prompt", "make it crisp"], "task_gpt_image_2");
   await expectCLI(["nano-banana-pro", "--input", files.refA, "--prompt", "make it premium", "--resolution", "4K"], "task_nano_banana_pro");
   await expectCLI(["remove-image-watermark", "--input", files.watermarked], "task_remove_image_watermark");
@@ -156,7 +156,8 @@ try {
   assertAllUploadsOmitAPIKey();
   assertTaskBody("/v1/images/gpt-image-2", (body) => {
     assert(body.prompt === "hello", "generation prompt mismatch");
-    assert(body.aspect_ratio === "1:1", "generation aspect ratio mismatch");
+    assert(body.aspect_ratio === "auto", "generation aspect ratio mismatch");
+    assert(body.resolution === "2K", "generation resolution mismatch");
   });
   assertTaskBody("/v1/images/gpt-image-2", (body) => {
     assert(Array.isArray(body.image_file_ids), "edit image_file_ids missing");
