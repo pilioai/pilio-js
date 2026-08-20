@@ -10,6 +10,8 @@
     "typecheck": "pnpm --filter @pilio/sdk build && pnpm -r typecheck",
     "smoke:cli": "node scripts/smoke-cli.mjs",
     "live:cli": "node scripts/live-cli.mjs",
+    "live:gpt-image-2": "node scripts/live-gpt-image-2.mjs",
+    "test:live:gpt-image-2": "node --test scripts/live-gpt-image-2.test.mjs",
     "generate:types": "openapi-typescript openapi/pilio-openapi.json --output packages/sdk/src/generated/openapi.d.ts",
     "lint:openapi": "redocly lint openapi/pilio-openapi.json",
     "sync:openapi": "node scripts/sync-openapi.mjs"

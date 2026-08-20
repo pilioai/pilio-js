@@ -65,6 +65,21 @@ const result = await client.tasks.wait(task.task_id);
 console.log(result.files);
 ```
 
+Quote GPT Image 2 before creating a paid task:
+
+```ts
+const quote = await client.images.gptImage2.quote({
+  prompt: "A centered product icon",
+  aspect_ratio: "auto",
+  resolution: "2K",
+  output_count: 1,
+});
+
+if (!quote.affordable || Number(quote.charged_credits) > 17) {
+  throw new Error("GPT Image 2 request exceeds the local budget");
+}
+```
+
 `client.files.upload()` performs the presigned PUT and then confirms the upload through `/v1/files/{id}/complete`. The API key is sent only to Pilio endpoints, never to the presigned upload URL.
 
 Keep API keys in environment variables or a secure secret store. Do not commit real credentials.

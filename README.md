@@ -99,3 +99,16 @@ PILIO_API_KEY=... PILIO_BASE_URL=https://pilio.ai pnpm live:cli
 ```
 
 `pnpm live:cli` creates temporary PNG/PDF fixtures, runs every CLI command once, waits for each task result, and removes the temporary files. Keep API keys in the process environment only.
+
+Focused GPT Image 2 2K verification is dry-run by default and quotes the request before allowing one paid task:
+
+```powershell
+pnpm run live:gpt-image-2
+$env:PILIO_BASE_URL="http://localhost:30080"
+$env:PILIO_API_KEY="..."
+$env:PILIO_LIVE_MAX_CREDITS="17"
+$env:PILIO_LIVE_CONFIRM="gpt-image-2-2k-one-paid-task"
+pnpm run live:gpt-image-2
+```
+
+The focused check validates an unsupported combination through the no-charge quote endpoint, enforces the quoted credit cap, creates exactly one `auto + 2K` task, requires the final provider to be KIE, and verifies the downloaded image's content type, magic bytes, extension, and dimensions. It does not start local services. Non-local targets additionally require `PILIO_LIVE_ALLOW_REMOTE=1`.

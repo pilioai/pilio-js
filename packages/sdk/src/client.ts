@@ -3,6 +3,7 @@ import type {
   FileUploadItem,
   FetchLike,
   GPTImage2Request,
+  GPTImage2QuoteResult,
   ImageUpscaleRequest,
   NanoBanana2Request,
   PDFRemoveWatermarkRequest,
@@ -72,6 +73,7 @@ export class PilioClient {
   readonly images = {
     gptImage2: {
       create: (input: GPTImage2Request) => this.createGPTImage2(input),
+      quote: (input: GPTImage2Request) => this.post<GPTImage2QuoteResult>("/v1/images/gpt-image-2/quote", input),
     },
     nanoBanana2: {
       create: (input: NanoBanana2Request) => this.post<TaskCreateResult>("/v1/images/nano-banana-2", input),

@@ -9,6 +9,46 @@ function jsonResponse(body: unknown, init?: ResponseInit) {
 }
 
 describe("PilioClient", () => {
+  it("quotes GPT Image 2 without creating a task", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({
+      code: 200,
+      message: "ok",
+      data: {
+        base_credits: "8.34",
+        charged_credits: "16.68",
+        available_credits: "100",
+        affordable: true,
+        estimate_kind: "final_estimate",
+        may_change_after_worker_preflight: false,
+        credits_multiplier_bps: 20000,
+      },
+    }));
+    const client = new PilioClient({ apiKey: "test_key", baseURL: "https://example.test", fetch: fetchMock });
+
+    const quote = await client.images.gptImage2.quote({
+      prompt: "hello",
+      aspect_ratio: "auto",
+      resolution: "2K",
+      output_count: 1,
+      quality: "auto",
+    });
+
+    expect(quote.charged_credits).toBe("16.68");
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://example.test/v1/images/gpt-image-2/quote",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({
+          prompt: "hello",
+          aspect_ratio: "auto",
+          resolution: "2K",
+          output_count: 1,
+          quality: "auto",
+        }),
+      }),
+    );
+  });
+
   it("sends bearer API key to Pilio API requests", async () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ code: 200, message: "ok", data: { task_id: "task_1", status: "Pending", status_url: "/v1/tasks/task_1/status", result_url: "/v1/tasks/task_1/result" } }));
     const client = new PilioClient({ apiKey: "pilio_sk_test", baseURL: "https://example.test", fetch: fetchMock });

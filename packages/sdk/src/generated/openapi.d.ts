@@ -24,6 +24,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/images/gpt-image-2/quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Quote a GPT Image 2 request without creating a task
+         * @description Validates the same request shape and returns the same server-side pricing snapshot used by task creation. This endpoint does not create a task, call an upstream provider, or consume credits. Use charged_credits to enforce a client-side budget before calling the creation endpoint.
+         */
+        post: operations["quoteGPTImage2"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/images/nano-banana-2": {
         parameters: {
             query?: never;
@@ -231,6 +251,25 @@ export interface components {
             result_url: string;
             /** Format: date-time */
             created_at?: string;
+        };
+        TaskBillingQuoteEnvelope: components["schemas"]["ResponseEnvelope"] & {
+            data?: components["schemas"]["TaskBillingQuoteResult"];
+        };
+        TaskBillingQuoteResult: {
+            /** @description Web base credit cost in display units, represented as an exact decimal string. */
+            base_credits: string;
+            /** @description Developer API credit cost in display units after applying the account multiplier. Compare this exact decimal string against your budget before task creation. */
+            charged_credits: string;
+            /** @description Current available credit balance in display units, represented as an exact decimal string. */
+            available_credits: string;
+            affordable: boolean;
+            blocking_code?: number;
+            blocking_reason?: string;
+            /** @enum {string} */
+            estimate_kind: "estimated" | "final_estimate";
+            may_change_after_worker_preflight: boolean;
+            /** @description Applied developer API multiplier in basis points; 20000 means 2x. */
+            credits_multiplier_bps: number;
         };
         TaskStatusEnvelope: components["schemas"]["ResponseEnvelope"] & {
             data?: components["schemas"]["TaskStatusResult"];
@@ -510,6 +549,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TaskCreateEnvelope"];
+                };
+            };
+            400: components["responses"]["ErrorResponse"];
+            401: components["responses"]["ErrorResponse"];
+        };
+    };
+    quoteGPTImage2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "prompt": "A centered red product icon on a plain background",
+                 *       "aspect_ratio": "auto",
+                 *       "resolution": "2K",
+                 *       "output_count": 1,
+                 *       "quality": "auto"
+                 *     }
+                 */
+                "application/json": components["schemas"]["GPTImage2Request"];
+            };
+        };
+        responses: {
+            /** @description Validated quote; no task was created and no credits were consumed */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskBillingQuoteEnvelope"];
                 };
             };
             400: components["responses"]["ErrorResponse"];

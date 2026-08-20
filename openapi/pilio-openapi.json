@@ -78,6 +78,51 @@
         }
       }
     },
+    "/v1/images/gpt-image-2/quote": {
+      "post": {
+        "tags": [
+          "GPT Image 2"
+        ],
+        "summary": "Quote a GPT Image 2 request without creating a task",
+        "description": "Validates the same request shape and returns the same server-side pricing snapshot used by task creation. This endpoint does not create a task, call an upstream provider, or consume credits. Use charged_credits to enforce a client-side budget before calling the creation endpoint.",
+        "operationId": "quoteGPTImage2",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GPTImage2Request"
+              },
+              "example": {
+                "prompt": "A centered red product icon on a plain background",
+                "aspect_ratio": "auto",
+                "resolution": "2K",
+                "output_count": 1,
+                "quality": "auto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Validated quote; no task was created and no credits were consumed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskBillingQuoteEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        }
+      }
+    },
     "/v1/images/nano-banana-2": {
       "post": {
         "tags": [
@@ -665,6 +710,77 @@
           "created_at": {
             "type": "string",
             "format": "date-time"
+          }
+        },
+        "x-tags": [
+          "Shared Schemas"
+        ]
+      },
+      "TaskBillingQuoteEnvelope": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ResponseEnvelope"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/TaskBillingQuoteResult"
+              }
+            }
+          }
+        ],
+        "x-tags": [
+          "Shared Schemas"
+        ]
+      },
+      "TaskBillingQuoteResult": {
+        "type": "object",
+        "required": [
+          "base_credits",
+          "charged_credits",
+          "available_credits",
+          "affordable",
+          "estimate_kind",
+          "may_change_after_worker_preflight",
+          "credits_multiplier_bps"
+        ],
+        "properties": {
+          "base_credits": {
+            "type": "string",
+            "description": "Web base credit cost in display units, represented as an exact decimal string."
+          },
+          "charged_credits": {
+            "type": "string",
+            "description": "Developer API credit cost in display units after applying the account multiplier. Compare this exact decimal string against your budget before task creation."
+          },
+          "available_credits": {
+            "type": "string",
+            "description": "Current available credit balance in display units, represented as an exact decimal string."
+          },
+          "affordable": {
+            "type": "boolean"
+          },
+          "blocking_code": {
+            "type": "integer"
+          },
+          "blocking_reason": {
+            "type": "string"
+          },
+          "estimate_kind": {
+            "type": "string",
+            "enum": [
+              "estimated",
+              "final_estimate"
+            ]
+          },
+          "may_change_after_worker_preflight": {
+            "type": "boolean"
+          },
+          "credits_multiplier_bps": {
+            "type": "integer",
+            "minimum": 10000,
+            "description": "Applied developer API multiplier in basis points; 20000 means 2x."
           }
         },
         "x-tags": [

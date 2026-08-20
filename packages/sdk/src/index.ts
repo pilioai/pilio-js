@@ -3,6 +3,7 @@ export { PilioAPIError, PilioUploadError } from "./errors";
 export type {
   FileUploadItem,
   GPTImage2Request,
+  GPTImage2QuoteResult,
   ImageUpscaleRequest,
   NanoBanana2Request,
   PDFRemoveWatermarkRequest,
