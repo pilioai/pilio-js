@@ -3,7 +3,7 @@
   "info": {
     "title": "Pilio Public API",
     "version": "1.0.0",
-    "description": "Public API for Pilio GPT Image 2, Nano Banana 2, Nano Banana Pro, image watermark removal, background removal, image upscale, and PDF watermark removal tasks. API tasks reuse the normal Pilio credit balance and consume 3x the web base credit cost by default; large customer accounts may have a custom multiplier. This specification is optimized for AI coding agents: create files first, upload to presigned URLs, create tasks with file IDs, poll status, then download result URLs."
+    "description": "Public API for Pilio GPT Image 2, Nano Banana 2, Nano Banana Pro, image watermark removal, background removal, image upscale, and PDF watermark removal tasks. API tasks reuse the normal Pilio credit balance, and standard pricing matches the web base credit cost at 1x; explicitly configured accounts may have a custom multiplier. This specification is optimized for AI coding agents: create files first, upload to presigned URLs, create tasks with file IDs, poll status, then download result URLs."
   },
   "servers": [
     {
