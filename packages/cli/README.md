@@ -14,6 +14,17 @@ You can also run commands without a global install:
 pnpm dlx @pilio/cli <command>
 ```
 
+## GPT Image 2.5 (unreleased)
+
+Requires a newer CLI release than 0.2.2 and compatible server endpoints.
+
+```bash
+pilio gpt-image-2.5-flare --prompt "A product photo" --resolution 2K
+pilio gpt-image-2.5-sunburst --prompt "Edit this product photo" --input reference.png --resolution 4K --aspect-ratio 16:9
+```
+
+Supports 1K/2K/4K, one output, auto quality, and up to 16 references (`--input` repeated). Aspect ratios: auto, 1:1, 3:2, 2:3, 3:4, 4:3, 16:9, 9:16, 21:9. 4K dimensions depend on aspect ratio, e.g. 3840x2160 at 16:9. Use the SDK's model-specific `quote` method before creating a task to check current account pricing.
+
 ## Usage
 
 Create a Pilio API key in your Pilio account, then set it in the environment:

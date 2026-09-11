@@ -39,6 +39,20 @@ const task = await client.images.nanoBanana2.create({
 });
 ```
 
+## GPT Image 2.5 (unreleased)
+
+These methods are in source and require a newer release than 0.2.2 plus compatible server endpoints.
+
+```ts
+const input = { prompt: "A product photograph", resolution: "2K" } as const;
+const quote = await client.images.gptImage25Flare.quote(input);
+const task = await client.images.gptImage25Flare.create(input);
+const result = await client.tasks.wait(task.task_id);
+// Sunburst uses client.images.gptImage25Sunburst.create/quote.
+```
+
+Both variants support 1K/2K/4K, `output_count: 1`, `quality: "auto"`, and up to 16 uploaded `image_file_ids`. Omit references for text-to-image. Aspect ratios: auto, 1:1, 3:2, 2:3, 3:4, 4:3, 16:9, 9:16, 21:9. Defaults are auto aspect ratio, 1K, one output, and auto quality. 4K is approximately 8.3 megapixels, with dimensions depending on aspect ratio. Unsupported endpoints fail without falling back to GPT Image 2. Quote responses use display credits and do not consume credits.
+
 ## Upload a local file
 
 ```ts

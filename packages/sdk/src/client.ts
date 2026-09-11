@@ -4,6 +4,8 @@ import type {
   FetchLike,
   GPTImage2Request,
   GPTImage2QuoteResult,
+  GPTImage25Request,
+  GPTImage25QuoteResult,
   ImageUpscaleRequest,
   NanoBanana2Request,
   PDFRemoveWatermarkRequest,
@@ -71,6 +73,14 @@ export class PilioClient {
   }
 
   readonly images = {
+    gptImage25Flare: {
+      create: (input: GPTImage25Request) => this.post<TaskCreateResult>("/v1/images/gpt-image-2.5-flare", input),
+      quote: (input: GPTImage25Request) => this.post<GPTImage25QuoteResult>("/v1/images/gpt-image-2.5-flare/quote", input),
+    },
+    gptImage25Sunburst: {
+      create: (input: GPTImage25Request) => this.post<TaskCreateResult>("/v1/images/gpt-image-2.5-sunburst", input),
+      quote: (input: GPTImage25Request) => this.post<GPTImage25QuoteResult>("/v1/images/gpt-image-2.5-sunburst/quote", input),
+    },
     gptImage2: {
       create: (input: GPTImage2Request) => this.createGPTImage2(input),
       quote: (input: GPTImage2Request) => this.post<GPTImage2QuoteResult>("/v1/images/gpt-image-2/quote", input),

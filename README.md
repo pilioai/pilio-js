@@ -82,6 +82,15 @@ const result = await client.tasks.wait(task.task_id);
 console.log(result.files);
 ```
 
+## GPT Image 2.5 (unreleased)
+
+Source support is available for Flare and Sunburst. Published version 0.2.2 does not include it. Both the server endpoints and a newer SDK/CLI release are required.
+
+- SDK: `client.images.gptImage25Flare.create/quote` and `client.images.gptImage25Sunburst.create/quote`.
+- CLI: `pilio gpt-image-2.5-flare` and `pilio gpt-image-2.5-sunburst`.
+- Both variants support 1K/2K/4K, one output, auto quality, and up to 16 reference images. They never fall back to GPT Image 2.
+- Use `quote` for current account pricing. 4K dimensions depend on aspect ratio; 16:9 is approximately 3840x2160, not 4096x4096.
+
 ## Development
 
 ```bash

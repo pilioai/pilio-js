@@ -20,6 +20,8 @@ type ParsedArgs = {
 const HELP = `Usage: pilio <command> [options]
 
 Commands:
+  gpt-image-2.5-flare --prompt <text> [--input <path>] [--aspect-ratio <ratio>] [--resolution <1K|2K|4K>]
+  gpt-image-2.5-sunburst --prompt <text> [--input <path>] [--aspect-ratio <ratio>] [--resolution <1K|2K|4K>]
   gpt-image-2 --prompt <text> [--input <path>] [--aspect-ratio <ratio>] [--resolution <1K|2K|4K>]
   nano-banana-2 --prompt <text> [--input <path>] [--aspect-ratio <ratio>] [--resolution <0.5K|1K|2K|4K>]
   remove-image-watermark --input <path>
@@ -137,6 +139,23 @@ export function createCommandRunner(options: CommandRunnerOptions) {
 
     if (!command || command === "help" || command === "--help") {
       output(HELP);
+      return;
+    }
+
+    if (command === "gpt-image-2.5-flare" || command === "gpt-image-2.5-sunburst") {
+      if (subcommand) throw new Error(`Use pilio ${command} --prompt <text> [--input <path>]`);
+      validateGPTImage2Options(parsed.options);
+      const ratio = optionalString(parsed.options, "aspect-ratio");
+      if (ratio && GPT_IMAGE_2_HIGH_RES_UNSUPPORTED_ASPECT_RATIOS.has(ratio)) {
+        throw new Error(`GPT Image 2.5 does not support aspect ratio ${ratio}`);
+      }
+      const quality = optionalString(parsed.options, "quality");
+      const count = optionalInteger(parsed.options, "output-count");
+      if (quality !== undefined && quality !== "auto") throw new Error("GPT Image 2.5 only supports --quality auto");
+      if (count !== undefined && count !== 1) throw new Error("GPT Image 2.5 only supports --output-count 1");
+      if (stringList(parsed.options, "input").length > 16) throw new Error("GPT Image 2.5 supports at most 16 reference images");
+      const model = command === "gpt-image-2.5-flare" ? options.client.images.gptImage25Flare : options.client.images.gptImage25Sunburst;
+      await createImageTask(options, parsed.options, (payload) => model.create(payload));
       return;
     }
 

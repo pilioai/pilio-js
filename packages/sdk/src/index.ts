@@ -4,6 +4,8 @@ export type {
   FileUploadItem,
   GPTImage2Request,
   GPTImage2QuoteResult,
+  GPTImage25Request,
+  GPTImage25QuoteResult,
   ImageUpscaleRequest,
   NanoBanana2Request,
   PDFRemoveWatermarkRequest,

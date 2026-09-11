@@ -224,6 +224,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/images/gpt-image-2.5-flare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create an image task with GPT Image 2.5 Flare
+         * @description Creates an asynchronous image task. Uses the exact Flare model without falling back to GPT Image 2. Supports text-to-image and 1 to 16 reference images; one output, auto quality, 1K/2K/4K. Use the quote endpoint for current account-specific pricing.
+         */
+        post: operations["createGPTImage25Flare"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/images/gpt-image-2.5-flare/quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Quote credits for GPT Image 2.5 Flare
+         * @description Returns a credit quote without creating a task or deducting credits. Uses the exact Flare model without falling back to GPT Image 2. Supports text-to-image and 1 to 16 reference images; one output, auto quality, 1K/2K/4K. Use the quote endpoint for current account-specific pricing.
+         */
+        post: operations["quoteGPTImage25Flare"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/images/gpt-image-2.5-sunburst": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create an image task with GPT Image 2.5 Sunburst
+         * @description Creates an asynchronous image task. Uses the exact Sunburst model without falling back to GPT Image 2. Supports text-to-image and 1 to 16 reference images; one output, auto quality, 1K/2K/4K. Use the quote endpoint for current account-specific pricing.
+         */
+        post: operations["createGPTImage25Sunburst"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/images/gpt-image-2.5-sunburst/quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Quote credits for GPT Image 2.5 Sunburst
+         * @description Returns a credit quote without creating a task or deducting credits. Uses the exact Sunburst model without falling back to GPT Image 2. Supports text-to-image and 1 to 16 reference images; one output, auto quality, 1K/2K/4K. Use the quote endpoint for current account-specific pricing.
+         */
+        post: operations["quoteGPTImage25Sunburst"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -268,7 +348,7 @@ export interface components {
             /** @enum {string} */
             estimate_kind: "estimated" | "final_estimate";
             may_change_after_worker_preflight: boolean;
-            /** @description Applied developer API multiplier in basis points; 20000 means 2x. */
+            /** @description Applied developer API multiplier in basis points; standard web-parity pricing is 10000 (1x), while account-specific rates may differ. */
             credits_multiplier_bps: number;
         };
         TaskStatusEnvelope: components["schemas"]["ResponseEnvelope"] & {
@@ -346,7 +426,7 @@ export interface components {
             /** @enum {integer} */
             output_count?: 1 | 2 | 4;
             /** @enum {string} */
-            resolution?: "0.5K" | "1K" | "2K" | "4K";
+            resolution?: "1K" | "2K" | "4K";
             /** @enum {string} */
             preprocess_mode?: "off" | "auto";
         };
@@ -506,6 +586,35 @@ export interface components {
             code?: string;
             meaning?: string;
             fix?: string;
+        };
+        GPTImage25Request: {
+            prompt: string;
+            negative_prompt?: string;
+            /** @description Optional reference image file IDs. Omit for text-to-image; pass 1 to 16 file IDs for reference-image editing or composition. Supported input formats: jpg, jpeg, png, webp. */
+            image_file_ids?: string[];
+            /**
+             * @description Optional output aspect ratio. Defaults to auto.
+             * @enum {string}
+             */
+            aspect_ratio?: "auto" | "1:1" | "3:2" | "2:3" | "3:4" | "4:3" | "16:9" | "9:16" | "21:9";
+            /**
+             * @description Output resolution tier, default 1K. Actual pixel dimensions depend on aspect ratio. 4K is approximately 8.3 megapixels (for example 3840x2160 at 16:9), not a guarantee of 4096x4096.
+             * @enum {string}
+             */
+            resolution?: "1K" | "2K" | "4K";
+            /**
+             * @default 1
+             * @enum {integer}
+             */
+            output_count: 1;
+            /**
+             * @description Only auto quality is supported.
+             * @default auto
+             * @enum {string}
+             */
+            quality: "auto";
+            /** @enum {string} */
+            preprocess_mode?: "off" | "auto";
         };
     };
     responses: {
@@ -819,6 +928,128 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ResponseEnvelope"];
+                };
+            };
+            400: components["responses"]["ErrorResponse"];
+            401: components["responses"]["ErrorResponse"];
+        };
+    };
+    createGPTImage25Flare: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GPTImage25Request"];
+            };
+        };
+        responses: {
+            /** @description Task created */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskCreateEnvelope"];
+                };
+            };
+            400: components["responses"]["ErrorResponse"];
+            401: components["responses"]["ErrorResponse"];
+        };
+    };
+    quoteGPTImage25Flare: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "prompt": "A centered red product icon on a plain background",
+                 *       "aspect_ratio": "auto",
+                 *       "resolution": "2K",
+                 *       "output_count": 1,
+                 *       "quality": "auto"
+                 *     }
+                 */
+                "application/json": components["schemas"]["GPTImage25Request"];
+            };
+        };
+        responses: {
+            /** @description Validated quote; no task was created and no credits were consumed */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskBillingQuoteEnvelope"];
+                };
+            };
+            400: components["responses"]["ErrorResponse"];
+            401: components["responses"]["ErrorResponse"];
+        };
+    };
+    createGPTImage25Sunburst: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GPTImage25Request"];
+            };
+        };
+        responses: {
+            /** @description Task created */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskCreateEnvelope"];
+                };
+            };
+            400: components["responses"]["ErrorResponse"];
+            401: components["responses"]["ErrorResponse"];
+        };
+    };
+    quoteGPTImage25Sunburst: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "prompt": "A centered red product icon on a plain background",
+                 *       "aspect_ratio": "auto",
+                 *       "resolution": "2K",
+                 *       "output_count": 1,
+                 *       "quality": "auto"
+                 *     }
+                 */
+                "application/json": components["schemas"]["GPTImage25Request"];
+            };
+        };
+        responses: {
+            /** @description Validated quote; no task was created and no credits were consumed */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskBillingQuoteEnvelope"];
                 };
             };
             400: components["responses"]["ErrorResponse"];
