@@ -19,39 +19,29 @@ const client = new PilioClient({
   apiKey: process.env.PILIO_API_KEY!,
 });
 
-const task = await client.images.gptImage2.create({
-  prompt: "A cinematic product photo of an orange perfume bottle",
-  aspect_ratio: "auto",
-  resolution: "2K",
-});
-
-const result = await client.tasks.wait(task.task_id);
-console.log(result);
-```
-
-Nano Banana 2 uses the same async task flow:
-
-```ts
-const task = await client.images.nanoBanana2.create({
-  prompt: "A clean editorial product poster with precise lighting",
-  aspect_ratio: "1:1",
-  resolution: "2K",
-});
-```
-
-## GPT Image 2.5 (unreleased)
-
-These methods are in source and require a newer release than 0.2.2 plus compatible server endpoints.
-
-```ts
-const input = { prompt: "A product photograph", resolution: "2K" } as const;
+const input = { prompt: "A cinematic product photo of an orange perfume bottle", aspect_ratio: "16:9", resolution: "2K" } as const;
 const quote = await client.images.gptImage25Flare.quote(input);
 const task = await client.images.gptImage25Flare.create(input);
 const result = await client.tasks.wait(task.task_id);
+console.log(quote, result);
 // Sunburst uses client.images.gptImage25Sunburst.create/quote.
 ```
 
-Both variants support 1K/2K/4K, `output_count: 1`, `quality: "auto"`, and up to 16 uploaded `image_file_ids`. Omit references for text-to-image. Aspect ratios: auto, 1:1, 3:2, 2:3, 3:4, 4:3, 16:9, 9:16, 21:9. Defaults are auto aspect ratio, 1K, one output, and auto quality. 4K is approximately 8.3 megapixels, with dimensions depending on aspect ratio. Unsupported endpoints fail without falling back to GPT Image 2. Quote responses use display credits and do not consume credits.
+GPT Image 2.5 Flare and Sunburst support 1K/2K/4K, `output_count: 1`, `quality: "auto"`, and up to 16 uploaded `image_file_ids`. Omit references for text-to-image. Aspect ratios: 1:1, 3:2, 2:3, 3:4, 4:3, 16:9, 9:16, 21:9 (default 1:1; `auto` is not supported). 4K is approximately 8.3 megapixels, with dimensions depending on aspect ratio. Quote responses use display credits and do not consume credits.
+
+Nano Banana 2.1 uses the same async task flow:
+
+```ts
+const task = await client.images.nanoBanana21.create({
+  prompt: "A clean editorial product poster with precise lighting",
+  aspect_ratio: "4:5",
+  resolution: "2K",
+});
+```
+
+It supports 1K/2K/4K, one output, and up to 14 `image_file_ids`; `aspect_ratio` is required for text-to-image. Use `client.images.nanoBanana21.quote` to check credits first.
+
+`images.gptImage2`, `images.nanoBanana2`, and `pdfs.removeWatermark` are deprecated. The first two still work for existing integrations; PDF watermark removal no longer accepts new tasks.
 
 ## Upload a local file
 
@@ -79,18 +69,17 @@ const result = await client.tasks.wait(task.task_id);
 console.log(result.files);
 ```
 
-Quote GPT Image 2 before creating a paid task:
+Quote before creating a paid task:
 
 ```ts
-const quote = await client.images.gptImage2.quote({
+const quote = await client.images.gptImage25Flare.quote({
   prompt: "A centered product icon",
-  aspect_ratio: "auto",
+  aspect_ratio: "1:1",
   resolution: "2K",
-  output_count: 1,
 });
 
-if (!quote.affordable || Number(quote.charged_credits) > 17) {
-  throw new Error("GPT Image 2 request exceeds the local budget");
+if (!quote.affordable || Number(quote.charged_credits) > 20) {
+  throw new Error("Request exceeds the local budget");
 }
 ```
 

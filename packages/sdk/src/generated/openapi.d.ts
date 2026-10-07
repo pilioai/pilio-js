@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-    "/v1/images/gpt-image-2": {
+    "/v1/images/gpt-image-2.5-flare": {
         parameters: {
             query?: never;
             header?: never;
@@ -14,17 +14,17 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Create a GPT Image 2 image task
-         * @description Creates an asynchronous GPT Image 2 task. Send only a prompt for text-to-image, or include image_file_ids for reference-image editing or composition. aspect_ratio and resolution are independent parameters: auto is passed through unchanged, omitted/1K requests use AI Gateway, and 2K/4K requests use the existing KIE channel.
+         * Create an image task with GPT Image 2.5 Flare
+         * @description Creates an asynchronous image task. Uses the exact Flare model without falling back to GPT Image 2. Supports text-to-image and 1 to 16 reference images; one output, auto quality, 1K/2K/4K. Use the quote endpoint for current account-specific pricing.
          */
-        post: operations["createGPTImage2"];
+        post: operations["createGPTImage25Flare"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/v1/images/gpt-image-2/quote": {
+    "/v1/images/gpt-image-2.5-flare/quote": {
         parameters: {
             query?: never;
             header?: never;
@@ -34,17 +34,17 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Quote a GPT Image 2 request without creating a task
-         * @description Validates the same request shape and returns the same server-side pricing snapshot used by task creation. This endpoint does not create a task, call an upstream provider, or consume credits. Use charged_credits to enforce a client-side budget before calling the creation endpoint.
+         * Quote credits for GPT Image 2.5 Flare
+         * @description Returns a credit quote without creating a task or deducting credits. Uses the exact Flare model without falling back to GPT Image 2. Supports text-to-image and 1 to 16 reference images; one output, auto quality, 1K/2K/4K. Use the quote endpoint for current account-specific pricing.
          */
-        post: operations["quoteGPTImage2"];
+        post: operations["quoteGPTImage25Flare"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/v1/images/nano-banana-2": {
+    "/v1/images/gpt-image-2.5-sunburst": {
         parameters: {
             query?: never;
             header?: never;
@@ -54,10 +54,70 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Create a Nano Banana 2 image task
-         * @description Creates an asynchronous Nano Banana 2 task. Send only a prompt for text-to-image, or include image_file_ids for reference-image editing or composition.
+         * Create an image task with GPT Image 2.5 Sunburst
+         * @description Creates an asynchronous image task. Uses the exact Sunburst model without falling back to GPT Image 2. Supports text-to-image and 1 to 16 reference images; one output, auto quality, 1K/2K/4K. Use the quote endpoint for current account-specific pricing.
          */
-        post: operations["createNanoBanana2"];
+        post: operations["createGPTImage25Sunburst"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/images/gpt-image-2.5-sunburst/quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Quote credits for GPT Image 2.5 Sunburst
+         * @description Returns a credit quote without creating a task or deducting credits. Uses the exact Sunburst model without falling back to GPT Image 2. Supports text-to-image and 1 to 16 reference images; one output, auto quality, 1K/2K/4K. Use the quote endpoint for current account-specific pricing.
+         */
+        post: operations["quoteGPTImage25Sunburst"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/images/nano-banana-2.1": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create a Nano Banana 2.1 image task
+         * @description Creates an asynchronous image task. Uses the exact Nano Banana 2.1 model (successor to Nano Banana 2). Supports text-to-image and 1 to 14 reference images; one output, 1K/2K/4K. aspect_ratio is required when image_file_ids is omitted. Use the quote endpoint for current account-specific pricing.
+         */
+        post: operations["createNanoBanana21"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/images/nano-banana-2.1/quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Quote credits for Nano Banana 2.1
+         * @description Returns a credit quote without creating a task, calling the model, or deducting credits. Uses the exact Nano Banana 2.1 model (successor to Nano Banana 2). Supports text-to-image and 1 to 14 reference images; one output, 1K/2K/4K. aspect_ratio is required when image_file_ids is omitted. Use charged_credits to enforce a client-side budget before calling the creation endpoint.
+         */
+        post: operations["quoteNanoBanana21"];
         delete?: never;
         options?: never;
         head?: never;
@@ -224,7 +284,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/images/gpt-image-2.5-flare": {
+    "/v1/images/gpt-image-2": {
         parameters: {
             query?: never;
             header?: never;
@@ -234,17 +294,18 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Create an image task with GPT Image 2.5 Flare
-         * @description Creates an asynchronous image task. Uses the exact Flare model without falling back to GPT Image 2. Supports text-to-image and 1 to 16 reference images; one output, auto quality, 1K/2K/4K. Use the quote endpoint for current account-specific pricing.
+         * Create a GPT Image 2 image task (legacy)
+         * @deprecated
+         * @description Legacy model endpoint, kept for existing integrations. New integrations should use /v1/images/gpt-image-2.5-flare or /v1/images/gpt-image-2.5-sunburst. Creates an asynchronous GPT Image 2 task. Send only a prompt for text-to-image, or include image_file_ids for reference-image editing or composition. aspect_ratio and resolution are independent parameters: auto is passed through unchanged, omitted/1K requests use AI Gateway, and 2K/4K requests use the existing KIE channel.
          */
-        post: operations["createGPTImage25Flare"];
+        post: operations["createGPTImage2"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/v1/images/gpt-image-2.5-flare/quote": {
+    "/v1/images/gpt-image-2/quote": {
         parameters: {
             query?: never;
             header?: never;
@@ -254,17 +315,18 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Quote credits for GPT Image 2.5 Flare
-         * @description Returns a credit quote without creating a task or deducting credits. Uses the exact Flare model without falling back to GPT Image 2. Supports text-to-image and 1 to 16 reference images; one output, auto quality, 1K/2K/4K. Use the quote endpoint for current account-specific pricing.
+         * Quote a GPT Image 2 request without creating a task (legacy)
+         * @deprecated
+         * @description Legacy model endpoint, kept for existing integrations. New integrations should use the GPT Image 2.5 Flare or Sunburst quote endpoints. Validates the same request shape and returns the same server-side pricing snapshot used by task creation. This endpoint does not create a task, call an upstream provider, or consume credits. Use charged_credits to enforce a client-side budget before calling the creation endpoint.
          */
-        post: operations["quoteGPTImage25Flare"];
+        post: operations["quoteGPTImage2"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/v1/images/gpt-image-2.5-sunburst": {
+    "/v1/images/nano-banana-2": {
         parameters: {
             query?: never;
             header?: never;
@@ -274,30 +336,11 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Create an image task with GPT Image 2.5 Sunburst
-         * @description Creates an asynchronous image task. Uses the exact Sunburst model without falling back to GPT Image 2. Supports text-to-image and 1 to 16 reference images; one output, auto quality, 1K/2K/4K. Use the quote endpoint for current account-specific pricing.
+         * Create a Nano Banana 2 image task (legacy)
+         * @deprecated
+         * @description Legacy model endpoint: Nano Banana 2 is being retired. New integrations should use /v1/images/nano-banana-2.1. Creates an asynchronous Nano Banana 2 task. Send only a prompt for text-to-image, or include image_file_ids for reference-image editing or composition.
          */
-        post: operations["createGPTImage25Sunburst"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/images/gpt-image-2.5-sunburst/quote": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Quote credits for GPT Image 2.5 Sunburst
-         * @description Returns a credit quote without creating a task or deducting credits. Uses the exact Sunburst model without falling back to GPT Image 2. Supports text-to-image and 1 to 16 reference images; one output, auto quality, 1K/2K/4K. Use the quote endpoint for current account-specific pricing.
-         */
-        post: operations["quoteGPTImage25Sunburst"];
+        post: operations["createNanoBanana2"];
         delete?: never;
         options?: never;
         head?: never;
@@ -593,10 +636,11 @@ export interface components {
             /** @description Optional reference image file IDs. Omit for text-to-image; pass 1 to 16 file IDs for reference-image editing or composition. Supported input formats: jpg, jpeg, png, webp. */
             image_file_ids?: string[];
             /**
-             * @description Optional output aspect ratio. Defaults to auto.
+             * @description Optional output aspect ratio. Defaults to 1:1. auto is not supported.
+             * @default 1:1
              * @enum {string}
              */
-            aspect_ratio?: "auto" | "1:1" | "3:2" | "2:3" | "3:4" | "4:3" | "16:9" | "9:16" | "21:9";
+            aspect_ratio: "1:1" | "3:2" | "2:3" | "3:4" | "4:3" | "16:9" | "9:16" | "21:9";
             /**
              * @description Output resolution tier, default 1K. Actual pixel dimensions depend on aspect ratio. 4K is approximately 8.3 megapixels (for example 3840x2160 at 16:9), not a guarantee of 4096x4096.
              * @enum {string}
@@ -613,6 +657,29 @@ export interface components {
              * @enum {string}
              */
             quality: "auto";
+            /** @enum {string} */
+            preprocess_mode?: "off" | "auto";
+        };
+        NanoBanana21Request: {
+            prompt: string;
+            negative_prompt?: string;
+            /** @description Optional reference image file IDs. Omit for text-to-image; pass 1 to 14 file IDs for reference-image editing or composition. Supported input formats: jpg, jpeg, png, webp. */
+            image_file_ids?: string[];
+            /**
+             * @description Required when image_file_ids is omitted. Optional when reference images are provided.
+             * @enum {string}
+             */
+            aspect_ratio?: "1:1" | "2:3" | "3:2" | "3:4" | "4:3" | "4:5" | "5:4" | "9:16" | "16:9" | "21:9" | "1:4" | "4:1" | "1:8" | "8:1";
+            /**
+             * @description Only 1 is supported.
+             * @enum {integer}
+             */
+            output_count?: 1;
+            /**
+             * @description 1K, 2K, or 4K. Omitted requests are priced and generated as 1K.
+             * @enum {string}
+             */
+            resolution?: "1K" | "2K" | "4K";
             /** @enum {string} */
             preprocess_mode?: "off" | "auto";
         };
@@ -638,7 +705,7 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    createGPTImage2: {
+    createGPTImage25Flare: {
         parameters: {
             query?: never;
             header?: never;
@@ -647,7 +714,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["GPTImage2Request"];
+                "application/json": components["schemas"]["GPTImage25Request"];
             };
         };
         responses: {
@@ -664,7 +731,7 @@ export interface operations {
             401: components["responses"]["ErrorResponse"];
         };
     };
-    quoteGPTImage2: {
+    quoteGPTImage25Flare: {
         parameters: {
             query?: never;
             header?: never;
@@ -676,13 +743,13 @@ export interface operations {
                 /**
                  * @example {
                  *       "prompt": "A centered red product icon on a plain background",
-                 *       "aspect_ratio": "auto",
+                 *       "aspect_ratio": "1:1",
                  *       "resolution": "2K",
                  *       "output_count": 1,
                  *       "quality": "auto"
                  *     }
                  */
-                "application/json": components["schemas"]["GPTImage2Request"];
+                "application/json": components["schemas"]["GPTImage25Request"];
             };
         };
         responses: {
@@ -699,7 +766,7 @@ export interface operations {
             401: components["responses"]["ErrorResponse"];
         };
     };
-    createNanoBanana2: {
+    createGPTImage25Sunburst: {
         parameters: {
             query?: never;
             header?: never;
@@ -708,7 +775,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["NanoBanana2Request"];
+                "application/json": components["schemas"]["GPTImage25Request"];
             };
         };
         responses: {
@@ -719,6 +786,93 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TaskCreateEnvelope"];
+                };
+            };
+            400: components["responses"]["ErrorResponse"];
+            401: components["responses"]["ErrorResponse"];
+        };
+    };
+    quoteGPTImage25Sunburst: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "prompt": "A centered red product icon on a plain background",
+                 *       "aspect_ratio": "1:1",
+                 *       "resolution": "2K",
+                 *       "output_count": 1,
+                 *       "quality": "auto"
+                 *     }
+                 */
+                "application/json": components["schemas"]["GPTImage25Request"];
+            };
+        };
+        responses: {
+            /** @description Validated quote; no task was created and no credits were consumed */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskBillingQuoteEnvelope"];
+                };
+            };
+            400: components["responses"]["ErrorResponse"];
+            401: components["responses"]["ErrorResponse"];
+        };
+    };
+    createNanoBanana21: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NanoBanana21Request"];
+            };
+        };
+        responses: {
+            /** @description Task created */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskCreateEnvelope"];
+                };
+            };
+            400: components["responses"]["ErrorResponse"];
+            401: components["responses"]["ErrorResponse"];
+        };
+    };
+    quoteNanoBanana21: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NanoBanana21Request"];
+            };
+        };
+        responses: {
+            /** @description Validated quote; no task was created and no credits were consumed */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskBillingQuoteEnvelope"];
                 };
             };
             400: components["responses"]["ErrorResponse"];
@@ -934,7 +1088,7 @@ export interface operations {
             401: components["responses"]["ErrorResponse"];
         };
     };
-    createGPTImage25Flare: {
+    createGPTImage2: {
         parameters: {
             query?: never;
             header?: never;
@@ -943,7 +1097,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["GPTImage25Request"];
+                "application/json": components["schemas"]["GPTImage2Request"];
             };
         };
         responses: {
@@ -960,7 +1114,7 @@ export interface operations {
             401: components["responses"]["ErrorResponse"];
         };
     };
-    quoteGPTImage25Flare: {
+    quoteGPTImage2: {
         parameters: {
             query?: never;
             header?: never;
@@ -978,7 +1132,7 @@ export interface operations {
                  *       "quality": "auto"
                  *     }
                  */
-                "application/json": components["schemas"]["GPTImage25Request"];
+                "application/json": components["schemas"]["GPTImage2Request"];
             };
         };
         responses: {
@@ -995,7 +1149,7 @@ export interface operations {
             401: components["responses"]["ErrorResponse"];
         };
     };
-    createGPTImage25Sunburst: {
+    createNanoBanana2: {
         parameters: {
             query?: never;
             header?: never;
@@ -1004,7 +1158,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["GPTImage25Request"];
+                "application/json": components["schemas"]["NanoBanana2Request"];
             };
         };
         responses: {
@@ -1015,41 +1169,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TaskCreateEnvelope"];
-                };
-            };
-            400: components["responses"]["ErrorResponse"];
-            401: components["responses"]["ErrorResponse"];
-        };
-    };
-    quoteGPTImage25Sunburst: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                /**
-                 * @example {
-                 *       "prompt": "A centered red product icon on a plain background",
-                 *       "aspect_ratio": "auto",
-                 *       "resolution": "2K",
-                 *       "output_count": 1,
-                 *       "quality": "auto"
-                 *     }
-                 */
-                "application/json": components["schemas"]["GPTImage25Request"];
-            };
-        };
-        responses: {
-            /** @description Validated quote; no task was created and no credits were consumed */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TaskBillingQuoteEnvelope"];
                 };
             };
             400: components["responses"]["ErrorResponse"];

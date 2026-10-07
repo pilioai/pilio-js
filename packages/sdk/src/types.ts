@@ -7,10 +7,12 @@ export type TaskResult = components["schemas"]["TaskResult"];
 export type ResultFile = components["schemas"]["ResultFile"];
 export type FileUploadItem = components["schemas"]["FileUploadItem"];
 export type GPTImage2Request = components["schemas"]["GPTImage2Request"];
-export type GPTImage25Request = OptionalDefaults<components["schemas"]["GPTImage25Request"], "output_count" | "quality">;
+export type GPTImage25Request = OptionalDefaults<components["schemas"]["GPTImage25Request"], "output_count" | "quality" | "aspect_ratio">;
 export type GPTImage25QuoteResult = components["schemas"]["TaskBillingQuoteResult"];
 export type GPTImage2QuoteResult = components["schemas"]["TaskBillingQuoteResult"];
 export type NanoBanana2Request = components["schemas"]["NanoBanana2Request"];
+export type NanoBanana21Request = components["schemas"]["NanoBanana21Request"];
+export type NanoBanana21QuoteResult = components["schemas"]["TaskBillingQuoteResult"];
 
 type OptionalDefaults<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 

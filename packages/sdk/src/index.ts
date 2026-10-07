@@ -8,6 +8,8 @@ export type {
   GPTImage25QuoteResult,
   ImageUpscaleRequest,
   NanoBanana2Request,
+  NanoBanana21QuoteResult,
+  NanoBanana21Request,
   PDFRemoveWatermarkRequest,
   PilioClientOptions,
   RemoveBackgroundRequest,

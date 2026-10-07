@@ -59,8 +59,8 @@ try {
       args: ["upscale-image", "--input", files.source],
     },
     {
-      name: "remove-pdf-watermark",
-      args: ["remove-pdf-watermark", "--input", files.pdf, "--mode", "editable"],
+      name: "nano-banana-2.1",
+      args: ["nano-banana-2.1", "--prompt", "A tiny green square icon on white background", "--aspect-ratio", "1:1", "--resolution", "1K"],
     },
   ];
 

@@ -6,7 +6,7 @@ describe.each(["Flare", "Sunburst"] as const)("GPT Image 2.5 %s", (variant) => {
     const data = operation === "quote" ? { charged_credits: "8.34" } : { task_id: "task_25" };
     const fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({ code: 200, data })));
     const client = new PilioClient({ apiKey: "test_key", baseURL: "https://example.test", fetch });
-    const input: GPTImage25Request = { prompt: "product photo", image_file_ids: ["reference_1"], resolution: "2K", aspect_ratio: "auto", quality: "auto", output_count: 1 };
+    const input: GPTImage25Request = { prompt: "product photo", image_file_ids: ["reference_1"], resolution: "2K", aspect_ratio: "1:1", quality: "auto", output_count: 1 };
     const result = await client.images[`gptImage25${variant}`][operation](input);
     expect(result).toEqual(data);
     expect(fetch).toHaveBeenCalledExactlyOnceWith(

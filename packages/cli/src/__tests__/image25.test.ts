@@ -16,7 +16,7 @@ describe.each(["Flare", "Sunburst"] as const)("GPT Image 2.5 %s CLI", (variant) 
     expect(output).toHaveBeenCalledWith(expect.stringContaining("task_25"));
   });
 
-  it.each([["quality", "high"], ["output-count", "2"], ["aspect-ratio", "4:5"], ["resolution", "8K"]])("rejects --%s %s before upload", async (option, value) => {
+  it.each([["quality", "high"], ["output-count", "2"], ["aspect-ratio", "4:5"], ["aspect-ratio", "auto"], ["resolution", "8K"]])("rejects --%s %s before upload", async (option, value) => {
     const create = vi.fn();
     const upload = vi.fn();
     const runner = createCommandRunner({ client: { images: { [`gptImage25${variant}`]: { create } }, files: { upload } } as never });

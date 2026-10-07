@@ -148,7 +148,7 @@ const taskCreateRoutes = {
   "/v1/images/remove-watermark": { taskId: "task_remove_image_watermark" },
   "/v1/images/remove-background": { taskId: "task_remove_background" },
   "/v1/images/upscale": { taskId: "task_upscale_image" },
-  "/v1/pdfs/remove-watermark": { taskId: "task_remove_pdf_watermark" },
+  "/v1/images/nano-banana-2.1": { taskId: "task_nano_banana_21" },
 };
 
 await new Promise((resolveListen) => server.listen(0, "127.0.0.1", resolveListen));
@@ -161,7 +161,7 @@ try {
   await expectCLI(["remove-image-watermark", "--input", files.watermarked], "task_remove_image_watermark");
   await expectCLI(["remove-background", "--input", files.portrait], "task_remove_background");
   await expectCLI(["upscale-image", "--input", files.small], "task_upscale_image");
-  await expectCLI(["remove-pdf-watermark", "--input", files.pdf, "--mode", "ai"], "task_remove_pdf_watermark");
+  await expectCLI(["nano-banana-2.1", "--prompt", "poster", "--aspect-ratio", "4:5", "--resolution", "2K"], "task_nano_banana_21");
   await expectCLI(["task", "wait", "task_wait"], "result_1");
 
   assertAllPilioRequestsAreAuthenticated();
@@ -185,9 +185,10 @@ try {
   assertTaskBody("/v1/images/remove-watermark", (body) => assertHasFileID(body, "remove image watermark"));
   assertTaskBody("/v1/images/remove-background", (body) => assertHasFileID(body, "remove background"));
   assertTaskBody("/v1/images/upscale", (body) => assertHasFileID(body, "upscale image"));
-  assertTaskBody("/v1/pdfs/remove-watermark", (body) => {
-    assert(typeof body.pdf_file_id === "string" && body.pdf_file_id.startsWith("file_"), "PDF watermark command did not use uploaded PDF file id");
-    assert(body.mode === "ai", "PDF watermark mode mismatch");
+  assertTaskBody("/v1/images/nano-banana-2.1", (body) => {
+    assert(body.prompt === "poster", "Nano Banana 2.1 prompt mismatch");
+    assert(body.aspect_ratio === "4:5", "Nano Banana 2.1 aspect ratio mismatch");
+    assert(body.resolution === "2K", "Nano Banana 2.1 resolution mismatch");
   });
   assert(observed.taskStatuses.length === 1, "task wait should query task status");
   assert(observed.taskResults.length === 1, "task wait should query task result after success");
@@ -225,7 +226,7 @@ function assertAllPilioRequestsAreAuthenticated() {
 }
 
 function assertAllUploadsOmitAPIKey() {
-  assert(observed.uploads.length === 7, `expected 7 presigned uploads, got ${observed.uploads.length}`);
+  assert(observed.uploads.length === 6, `expected 6 presigned uploads, got ${observed.uploads.length}`);
   for (const upload of observed.uploads) {
     assert(upload.bytes > 0, `empty upload body for ${upload.path}`);
     assert(upload.auth === "", `Pilio API key was incorrectly sent to presigned upload URL ${upload.path}`);

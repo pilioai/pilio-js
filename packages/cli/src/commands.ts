@@ -22,18 +22,21 @@ const HELP = `Usage: pilio <command> [options]
 Commands:
   gpt-image-2.5-flare --prompt <text> [--input <path>] [--aspect-ratio <ratio>] [--resolution <1K|2K|4K>]
   gpt-image-2.5-sunburst --prompt <text> [--input <path>] [--aspect-ratio <ratio>] [--resolution <1K|2K|4K>]
-  gpt-image-2 --prompt <text> [--input <path>] [--aspect-ratio <ratio>] [--resolution <1K|2K|4K>]
-  nano-banana-2 --prompt <text> [--input <path>] [--aspect-ratio <ratio>] [--resolution <0.5K|1K|2K|4K>]
+  nano-banana-2.1 --prompt <text> [--input <path>] [--aspect-ratio <ratio>] [--resolution <1K|2K|4K>]
   remove-image-watermark --input <path>
   remove-background --input <path>
   upscale-image --input <path>
-  remove-pdf-watermark --input <path>
   task wait <task_id>
+
+Deprecated (kept for existing integrations):
+  gpt-image-2 --prompt <text> [--input <path>] [--aspect-ratio <ratio>] [--resolution <1K|2K|4K>]
+  nano-banana-2 --prompt <text> [--input <path>] [--aspect-ratio <ratio>] [--resolution <0.5K|1K|2K|4K>]
 `;
 
 const GPT_IMAGE_2_ASPECT_RATIOS = new Set(["1:1", "3:2", "2:3", "3:4", "4:3", "4:5", "5:4", "7:4", "16:9", "9:16", "21:9", "auto"]);
 const GPT_IMAGE_2_RESOLUTIONS = new Set(["1K", "2K", "4K"]);
 const GPT_IMAGE_2_HIGH_RES_UNSUPPORTED_ASPECT_RATIOS = new Set(["4:5", "5:4", "7:4"]);
+const NANO_BANANA_21_ASPECT_RATIOS = new Set(["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9", "21:9", "1:4", "4:1", "1:8", "8:1"]);
 
 function parseArgs(args: string[]): ParsedArgs {
   const positionals: string[] = [];
@@ -130,6 +133,23 @@ function validateGPTImage2Options(options: Record<string, string | true | string
   }
 }
 
+function validateNanoBanana21Options(options: Record<string, string | true | string[]>) {
+  const aspectRatio = optionalString(options, "aspect-ratio");
+  const resolution = optionalString(options, "resolution");
+  const count = optionalInteger(options, "output-count");
+  const inputs = stringList(options, "input").length;
+  if (aspectRatio && !NANO_BANANA_21_ASPECT_RATIOS.has(aspectRatio)) {
+    throw new Error(`Option --aspect-ratio must be one of: ${[...NANO_BANANA_21_ASPECT_RATIOS].join(", ")}`);
+  }
+  if (!aspectRatio && inputs === 0) throw new Error("Nano Banana 2.1 requires --aspect-ratio for text-to-image");
+  if (resolution && !GPT_IMAGE_2_RESOLUTIONS.has(resolution)) {
+    throw new Error(`Option --resolution must be one of: ${[...GPT_IMAGE_2_RESOLUTIONS].join(", ")}`);
+  }
+  if (optionalString(options, "quality") !== undefined) throw new Error("Nano Banana 2.1 does not support --quality");
+  if (count !== undefined && count !== 1) throw new Error("Nano Banana 2.1 only supports --output-count 1");
+  if (inputs > 14) throw new Error("Nano Banana 2.1 supports at most 14 reference images");
+}
+
 export function createCommandRunner(options: CommandRunnerOptions) {
   const output = options.output ?? console.log;
 
@@ -146,7 +166,7 @@ export function createCommandRunner(options: CommandRunnerOptions) {
       if (subcommand) throw new Error(`Use pilio ${command} --prompt <text> [--input <path>]`);
       validateGPTImage2Options(parsed.options);
       const ratio = optionalString(parsed.options, "aspect-ratio");
-      if (ratio && GPT_IMAGE_2_HIGH_RES_UNSUPPORTED_ASPECT_RATIOS.has(ratio)) {
+      if (ratio && (ratio === "auto" || GPT_IMAGE_2_HIGH_RES_UNSUPPORTED_ASPECT_RATIOS.has(ratio))) {
         throw new Error(`GPT Image 2.5 does not support aspect ratio ${ratio}`);
       }
       const quality = optionalString(parsed.options, "quality");
@@ -156,6 +176,13 @@ export function createCommandRunner(options: CommandRunnerOptions) {
       if (stringList(parsed.options, "input").length > 16) throw new Error("GPT Image 2.5 supports at most 16 reference images");
       const model = command === "gpt-image-2.5-flare" ? options.client.images.gptImage25Flare : options.client.images.gptImage25Sunburst;
       await createImageTask(options, parsed.options, (payload) => model.create(payload));
+      return;
+    }
+
+    if (command === "nano-banana-2.1") {
+      if (subcommand) throw new Error(`Use pilio ${command} --prompt <text> [--input <path>]`);
+      validateNanoBanana21Options(parsed.options);
+      await createImageTask(options, parsed.options, (payload) => options.client.images.nanoBanana21.create(payload));
       return;
     }
 
@@ -197,16 +224,6 @@ export function createCommandRunner(options: CommandRunnerOptions) {
     if (command === "upscale-image") {
       const file = await uploadInput(options, requireString(parsed.options, "input"));
       const result = await options.client.images.upscale({ image_file_id: String(file.id) });
-      printJSON(output, result);
-      return;
-    }
-
-    if (command === "remove-pdf-watermark") {
-      const file = await uploadInput(options, requireString(parsed.options, "input"));
-      const result = await options.client.pdfs.removeWatermark({
-        pdf_file_id: String(file.id),
-        ...(optionalString(parsed.options, "mode") ? { mode: optionalString(parsed.options, "mode") as never } : {}),
-      });
       printJSON(output, result);
       return;
     }

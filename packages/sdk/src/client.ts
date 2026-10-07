@@ -8,6 +8,8 @@ import type {
   GPTImage25QuoteResult,
   ImageUpscaleRequest,
   NanoBanana2Request,
+  NanoBanana21QuoteResult,
+  NanoBanana21Request,
   PDFRemoveWatermarkRequest,
   PilioClientOptions,
   RemoveBackgroundRequest,
@@ -81,10 +83,16 @@ export class PilioClient {
       create: (input: GPTImage25Request) => this.post<TaskCreateResult>("/v1/images/gpt-image-2.5-sunburst", input),
       quote: (input: GPTImage25Request) => this.post<GPTImage25QuoteResult>("/v1/images/gpt-image-2.5-sunburst/quote", input),
     },
+    nanoBanana21: {
+      create: (input: NanoBanana21Request) => this.post<TaskCreateResult>("/v1/images/nano-banana-2.1", input),
+      quote: (input: NanoBanana21Request) => this.post<NanoBanana21QuoteResult>("/v1/images/nano-banana-2.1/quote", input),
+    },
+    /** @deprecated Use gptImage25Flare or gptImage25Sunburst. Kept for existing integrations. */
     gptImage2: {
       create: (input: GPTImage2Request) => this.createGPTImage2(input),
       quote: (input: GPTImage2Request) => this.post<GPTImage2QuoteResult>("/v1/images/gpt-image-2/quote", input),
     },
+    /** @deprecated Use nanoBanana21. Kept for existing integrations. */
     nanoBanana2: {
       create: (input: NanoBanana2Request) => this.post<TaskCreateResult>("/v1/images/nano-banana-2", input),
     },
@@ -95,6 +103,7 @@ export class PilioClient {
   };
 
   readonly pdfs = {
+    /** @deprecated PDF watermark removal is retired; the API no longer accepts new tasks. */
     removeWatermark: (input: PDFRemoveWatermarkRequest) => this.post<TaskCreateResult>("/v1/pdfs/remove-watermark", input),
   };
 

@@ -42,24 +42,28 @@ $env:PILIO_API_KEY="..."
 Run a task:
 
 ```bash
-pilio gpt-image-2 --prompt "A cinematic product photo" --aspect-ratio auto --resolution 2K
+pilio gpt-image-2.5-flare --prompt "A cinematic product photo" --aspect-ratio 16:9 --resolution 2K
 ```
 
 Common commands:
 
 ```bash
-pilio gpt-image-2 --prompt <text> [--input <path>] [--aspect-ratio <ratio>] [--resolution <1K|2K|4K>]
-pilio nano-banana-2 --prompt <text> [--input <path>] [--aspect-ratio <ratio>] [--resolution <0.5K|1K|2K|4K>]
+pilio gpt-image-2.5-flare --prompt <text> [--input <path>] [--aspect-ratio <ratio>] [--resolution <1K|2K|4K>]
+pilio gpt-image-2.5-sunburst --prompt <text> [--input <path>] [--aspect-ratio <ratio>] [--resolution <1K|2K|4K>]
+pilio nano-banana-2.1 --prompt <text> [--input <path>] [--aspect-ratio <ratio>] [--resolution <1K|2K|4K>]
 pilio remove-image-watermark --input <path>
 pilio remove-background --input <path>
 pilio upscale-image --input <path>
-pilio remove-pdf-watermark --input <path>
 pilio task wait <task_id>
 ```
 
+`gpt-image-2` and `nano-banana-2` still work for existing integrations but are deprecated; use `gpt-image-2.5-flare` / `gpt-image-2.5-sunburst` and `nano-banana-2.1` for new work. `remove-pdf-watermark` was removed because the API no longer accepts PDF watermark tasks.
+
 Most commands return a task payload. Use `pilio task wait <task_id>` to wait for completion and print result files.
 
-For GPT Image 2, `aspect-ratio` and `resolution` are independent. `auto` is passed through unchanged. Omitted/`1K` requests use the standard route; `2K` and `4K` use the high-resolution route. The `4:5`, `5:4`, and `7:4` ratios are unavailable with `2K` or `4K`.
+GPT Image 2.5 supports 1 to 16 `--input` references, `1K`/`2K`/`4K`, and aspect ratios `1:1`, `3:2`, `2:3`, `3:4`, `4:3`, `16:9`, `9:16`, `21:9` (default `1:1`; `auto` is not supported).
+
+Nano Banana 2.1 supports 1 to 14 `--input` references, `1K`/`2K`/`4K`, and aspect ratios `1:1`, `2:3`, `3:2`, `3:4`, `4:3`, `4:5`, `5:4`, `9:16`, `16:9`, `21:9`, `1:4`, `4:1`, `1:8`, `8:1`. `--aspect-ratio` is required for text-to-image.
 
 Keep API keys in environment variables or a secure secret store. Do not commit real credentials.
 
@@ -67,12 +71,11 @@ Keep API keys in environment variables or a secure secret store. Do not commit r
 
 Use the hosted tools to test inputs and outputs in a browser before running the same workflow through the CLI:
 
-- `pilio gpt-image-2`: [GPT Image 2](https://pilio.ai/)
-- `pilio nano-banana-2`: [Nano Banana 2](https://pilio.ai/nano-banana-2)
+- `pilio gpt-image-2.5-flare` / `gpt-image-2.5-sunburst`: [GPT Image 2.5](https://pilio.ai/gpt-image-2-5)
+- `pilio nano-banana-2.1`: [Nano Banana 2.1](https://pilio.ai/nano-banana-2-1)
 - `pilio remove-image-watermark`: [Image watermark remover](https://pilio.ai/image-watermark-remover)
 - `pilio remove-background`: [Background remover](https://pilio.ai/background-remover)
 - `pilio upscale-image`: [Image upscaler](https://pilio.ai/image-upscaler)
-- `pilio remove-pdf-watermark`: [PDF watermark remover](https://pilio.ai/pdf-watermark-remover)
 - API reference and examples: [Pilio developers](https://pilio.ai/developers)
 
 ## License
