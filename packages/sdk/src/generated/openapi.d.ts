@@ -296,7 +296,7 @@ export interface paths {
         /**
          * Create a GPT Image 2 image task (legacy)
          * @deprecated
-         * @description Legacy model endpoint, kept for existing integrations. New integrations should use /v1/images/gpt-image-2.5-flare or /v1/images/gpt-image-2.5-sunburst. Creates an asynchronous GPT Image 2 task. Send only a prompt for text-to-image, or include image_file_ids for reference-image editing or composition. aspect_ratio and resolution are independent parameters: auto is passed through unchanged, omitted/1K requests use AI Gateway, and 2K/4K requests use the existing KIE channel.
+         * @description Legacy model endpoint, kept for existing integrations. New integrations should use /v1/images/gpt-image-2.5-flare or /v1/images/gpt-image-2.5-sunburst. Creates an asynchronous GPT Image 2 task. Send only a prompt for text-to-image, or include image_file_ids for reference-image editing or composition. aspect_ratio and resolution are independent parameters: auto is passed through unchanged.
          */
         post: operations["createGPTImage2"];
         delete?: never;
@@ -418,6 +418,27 @@ export interface components {
             error_message?: string;
             files?: components["schemas"]["ResultFile"][];
             zip_file?: components["schemas"]["ResultFile"];
+            generator_context?: components["schemas"]["GeneratorContext"];
+        };
+        /** @description Optional context for generation tasks. Omitted when there is nothing to report. */
+        GeneratorContext: {
+            /** @description Text returned alongside generated images, if any. */
+            output_text?: string;
+            /** @description How request parameters were handled when they could not be applied exactly as sent. */
+            parameter_notices?: components["schemas"]["ParameterNotice"][];
+            /** @description Web or image search sources used during generation. */
+            sources?: components["schemas"]["SearchSource"][];
+        };
+        ParameterNotice: {
+            /** @description Request parameter name, such as quality. */
+            name: string;
+            /** @description How the parameter was handled: sent, defaulted, translated, approximated, or ignored. */
+            disposition?: string;
+        };
+        SearchSource: {
+            type?: string;
+            title?: string;
+            url?: string;
         };
         ResultFile: {
             id: string;
@@ -442,7 +463,7 @@ export interface components {
              */
             aspect_ratio?: "1:1" | "3:2" | "2:3" | "3:4" | "4:3" | "4:5" | "5:4" | "7:4" | "16:9" | "9:16" | "21:9" | "auto";
             /**
-             * @description Optional output resolution tier. Omitted/1K requests use AI Gateway; 2K/4K requests use the existing KIE channel.
+             * @description Optional output resolution tier: 1K, 2K, or 4K.
              * @enum {string}
              */
             resolution?: "1K" | "2K" | "4K";

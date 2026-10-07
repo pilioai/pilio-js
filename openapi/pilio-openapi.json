@@ -789,7 +789,7 @@
           "GPT Image 2"
         ],
         "summary": "Create a GPT Image 2 image task (legacy)",
-        "description": "Legacy model endpoint, kept for existing integrations. New integrations should use /v1/images/gpt-image-2.5-flare or /v1/images/gpt-image-2.5-sunburst. Creates an asynchronous GPT Image 2 task. Send only a prompt for text-to-image, or include image_file_ids for reference-image editing or composition. aspect_ratio and resolution are independent parameters: auto is passed through unchanged, omitted/1K requests use AI Gateway, and 2K/4K requests use the existing KIE channel.",
+        "description": "Legacy model endpoint, kept for existing integrations. New integrations should use /v1/images/gpt-image-2.5-flare or /v1/images/gpt-image-2.5-sunburst. Creates an asynchronous GPT Image 2 task. Send only a prompt for text-to-image, or include image_file_ids for reference-image editing or composition. aspect_ratio and resolution are independent parameters: auto is passed through unchanged.",
         "operationId": "createGPTImage2",
         "requestBody": {
           "required": true,
@@ -1256,6 +1256,72 @@
           },
           "zip_file": {
             "$ref": "#/components/schemas/ResultFile"
+          },
+          "generator_context": {
+            "$ref": "#/components/schemas/GeneratorContext"
+          }
+        },
+        "x-tags": [
+          "Shared Schemas"
+        ]
+      },
+      "GeneratorContext": {
+        "type": "object",
+        "description": "Optional context for generation tasks. Omitted when there is nothing to report.",
+        "properties": {
+          "output_text": {
+            "type": "string",
+            "description": "Text returned alongside generated images, if any."
+          },
+          "parameter_notices": {
+            "type": "array",
+            "description": "How request parameters were handled when they could not be applied exactly as sent.",
+            "items": {
+              "$ref": "#/components/schemas/ParameterNotice"
+            }
+          },
+          "sources": {
+            "type": "array",
+            "description": "Web or image search sources used during generation.",
+            "items": {
+              "$ref": "#/components/schemas/SearchSource"
+            }
+          }
+        },
+        "x-tags": [
+          "Shared Schemas"
+        ]
+      },
+      "ParameterNotice": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Request parameter name, such as quality."
+          },
+          "disposition": {
+            "type": "string",
+            "description": "How the parameter was handled: sent, defaulted, translated, approximated, or ignored."
+          }
+        },
+        "x-tags": [
+          "Shared Schemas"
+        ]
+      },
+      "SearchSource": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
           }
         },
         "x-tags": [
@@ -1340,7 +1406,7 @@
               "2K",
               "4K"
             ],
-            "description": "Optional output resolution tier. Omitted/1K requests use AI Gateway; 2K/4K requests use the existing KIE channel."
+            "description": "Optional output resolution tier: 1K, 2K, or 4K."
           },
           "output_count": {
             "type": "integer",
